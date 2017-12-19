@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Scraping Albuquerque Crossfit Data • a hack of a hacker</title>
+    <meta name="description" content="R is fun and nice for making pretty graphs">
+    <meta name="keywords" content="data science, web scraping, facebook, r, crossfit, abq, albuquerque">
+    
+    
+    	<!-- Twitter Cards -->
+	<meta name="twitter:title" content="Scraping Albuquerque Crossfit Data">
+	<meta name="twitter:description" content="R is fun and nice for making pretty graphs">
+	<meta name="twitter:site" content="@binary_aaron">
+	<meta name="twitter:creator" content="@binary_aaron">
+	
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:image" content="http://aarongonzales.net/images/gggraph_crop.jpeg">
+	
+	<!-- Open Graph -->
+	<meta property="og:locale" content="">
+	<meta property="og:type" content="article">
+	<meta property="og:title" content="Scraping Albuquerque Crossfit Data">
+	<meta property="og:description" content="R is fun and nice for making pretty graphs">
+	<meta property="og:url" content="http://aarongonzales.net/posts/nerd/2014/04/10/abq_cf_data_new/">
+	<meta property="og:site_name" content="a hack of a hacker">
+
+    <link rel="canonical" href="http://aarongonzales.net/posts/nerd/2014/04/10/abq_cf_data_new/"> 
+    <link href='https://fonts.googleapis.com/css?family=Crimson+Text' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.019/css/hack.min.css" type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Bitter:400italic' rel='stylesheet' type='text/css'>
+
+
+    <link href="http://aarongonzales.net/atom.xml" type="application/atom+xml" rel="alternate" title="a hack of a hacker Atom Feed">
+    <link href="http://aarongonzales.net/sitemap.xml" type="application/xml" rel="sitemap" title="Sitemap">
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="cleartype" content="on">
+
+    <link rel="stylesheet" href="http://aarongonzales.net/css/main.css">
+    <!-- HTML5 Shiv and Media Query Support for IE -->
+    <!--[if lt IE 9]>
+      <script src="http://aarongonzales.net/js/vendor/html5shiv.min.js"></script>
+      <script src="http://aarongonzales.net/js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body id="js-body">
+    <!--[if lt IE 9]><div class="upgrade notice-warning"><strong>Your browser is quite old!</strong> Why not <a href="http://whatbrowser.org/">upgrade to a newer one</a> to better enjoy this site?</div><![endif]-->
+
+    <header id="masthead">
+
+
+  <div class="inner-wrap">
+    <a href="http://aarongonzales.net/" class="site-title">a hack of a hacker</a>
+    <nav role="navigation" class="menu top-menu">
+        <ul class="menu-item">
+	<li class="home"><a href="/">a hack of a hacker</a></li>
+	
+    
+        
+    
+    <li><a href="http://aarongonzales.net/posts/" >Posts</a></li>
+  
+    
+        
+    
+    <li><a href="http://aarongonzales.net/about/" >About</a></li>
+  
+</ul>
+
+    </nav>
+  </div><!-- /.inner-wrap -->
+</header><!-- /.masthead -->
+
+    <nav role="navigation" id="js-menu" class="sliding-menu-content">
+  <h5>a hack of a hacker <span>Table of Contents</span></h5>
+  <ul class="menu-item">
+    <li>
+      <a href="http://aarongonzales.net/posts/">
+        <img src="http://aarongonzales.net/images/clouds.jpg" alt="teaser" class="teaser">
+        <div class="title">Posts</div>
+        <p class="excerpt">Writing, coursework, reports, and projects</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/about/">
+        <img src="http://aarongonzales.net/images/avatar_long.jpg" alt="teaser" class="teaser">
+        <div class="title">About</div>
+        <p class="excerpt">I'm a regular guy, except when I'm not. Learn more about me here.</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/portfolio/">
+        <img src="http://aarongonzales.net/images/blog/decision_tree_teaser.png" alt="teaser" class="teaser">
+        <div class="title">Portfolio</div>
+        <p class="excerpt">A smattering of my work</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/coursework/">
+        <img src="http://aarongonzales.net/images/ethereal.jpg" alt="teaser" class="teaser">
+        <div class="title">Coursework</div>
+        <p class="excerpt">Stuff from my courses that may be useful to someone</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/research/">
+        <img src="http://aarongonzales.net/images/blog/fb_clusters_teaser.jpg" alt="teaser" class="teaser">
+        <div class="title">Research</div>
+        <p class="excerpt">Research updates and commentary</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/friends/">
+        <img src="http://aarongonzales.net/images/blog/fb_network_long.jpg" alt="teaser" class="teaser">
+        <div class="title">Friends</div>
+        <p class="excerpt">People whom I follow or like</p>
+      </a>
+    </li>
+  </ul>
+</nav>
+<button type="button" id="js-menu-trigger" class="sliding-menu-button lines-button x2" role="button" aria-label="Toggle Navigation">
+  <span class="nav-lines"></span>
+</button>
+
+<div id="js-menu-screen" class="menu-screen"></div>
+
+
+    <div id="page-wrapper">
+      <div id="main" role="main">
+  <article class="wrap" itemscope itemtype="http://schema.org/Article">
+    
+    
+  <nav class="breadcrumbs">
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net" itemprop="url">
+        <span itemprop="title">Home</span>
+      </a> › 
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net/posts/" itemprop="url">
+        <span itemprop="title">Posts</span>
+      </a>
+    </span>
+  </nav><!-- /.breadcrumbs -->
+
+    <div class="page-title">
+      <h1>Scraping Albuquerque Crossfit Data</h1>
+    </div>
+    <div class="inner-wrap">
+      <nav class="toc"></nav><!-- /.toc -->
+      <div id="content" class="page-content" itemprop="articleBody">
+        <p>I’ve been playing around with R and web data lately and thought i’d give a go at a minor analysis of publicly-available Facebook data.</p>
+<p>This first section is an example taken from Pablo Barbera’s <a href="https://github.com/pablobarbera/Rfacebook">RFacebook github page</a> used to look at <a href="http://blackboxfitnessnm.com">Black Box Fitness</a>’s <a href="https://www.facebook.com/blackboxfitness">Facebook page</a>.</p>
+<p>Libraries used for this analysis:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Rfacebook)
+<span class="kw">library</span>(Rook)
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(scales)</code></pre>
+<p>I have registered as a developer on facebook and have my authentication token saved. Data is read from Black Box’s public page and saved for local use here:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># me &lt;- getUsers(&#39;me&#39;, token=fb_oauth)</span>
+if (!<span class="kw">file.exists</span>(<span class="st">&quot;~/Dropbox/stats/blackbox/bbf_fb.csv&quot;</span>)) {
+    <span class="kw">load</span>(<span class="st">&quot;~/Dropbox/stats/facebook/fb_oauth&quot;</span>)
+    <span class="kw">print</span>(<span class="st">&quot;getting blackbox page&quot;</span>)
+    page &lt;-<span class="st"> </span><span class="kw">getPage</span>(<span class="st">&quot;blackboxfitness&quot;</span>, fb_oauth, <span class="dt">n =</span> <span class="dv">5000</span>)
+    <span class="kw">write.csv</span>(page, <span class="st">&quot;~/Dropbox/stats/blackbox/bbf_fb.csv&quot;</span>)
+}
+page &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;~/Dropbox/stats/blackbox/bbf_fb.csv&quot;</span>)</code></pre>
+<p>And now we copy Pablo’s code to do some simple plotting of page popularity over time:</p>
+<pre class="sourceCode r"><code class="sourceCode r">## convert Facebook date format to R date format
+format.facebook.date &lt;-<span class="st"> </span>function(datestring) {
+    date &lt;-<span class="st"> </span><span class="kw">as.POSIXct</span>(datestring, <span class="dt">format =</span> <span class="st">&quot;%Y-%m-%dT%H:%M:%S+0000&quot;</span>, <span class="dt">tz =</span> <span class="st">&quot;MST&quot;</span>)
+}
+## aggregate metric counts over month
+aggregate.metric &lt;-<span class="st"> </span>function(metric) {
+    m &lt;-<span class="st"> </span><span class="kw">aggregate</span>(page[[<span class="kw">paste0</span>(metric, <span class="st">&quot;_count&quot;</span>)]], <span class="kw">list</span>(<span class="dt">month =</span> page$month), 
+        mean)
+    m$month &lt;-<span class="st"> </span><span class="kw">as.Date</span>(<span class="kw">paste0</span>(m$month, <span class="st">&quot;-15&quot;</span>))
+    m$metric &lt;-<span class="st"> </span>metric
+    <span class="kw">return</span>(m)
+}
+<span class="co"># create data frame with average metric counts per month</span>
+page$datetime &lt;-<span class="st"> </span><span class="kw">format.facebook.date</span>(page$created_time)
+page$month &lt;-<span class="st"> </span><span class="kw">format</span>(page$datetime, <span class="st">&quot;%Y-%m&quot;</span>)
+df.list &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">c</span>(<span class="st">&quot;likes&quot;</span>, <span class="st">&quot;comments&quot;</span>, <span class="st">&quot;shares&quot;</span>), aggregate.metric)
+df &lt;-<span class="st"> </span><span class="kw">do.call</span>(rbind, df.list)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(df, <span class="kw">aes</span>(<span class="dt">x =</span> month, <span class="dt">y =</span> x, <span class="dt">group =</span> metric))
+p &lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">color =</span> metric), <span class="dt">size =</span> <span class="dv">2</span>)
+<span class="co"># p &lt;- p + scale_color_manual(values = wes.palette(3, &#39;Zissou&#39;))</span>
+p &lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">scale_x_date</span>(<span class="dt">breaks =</span> <span class="st">&quot;years&quot;</span>, <span class="dt">labels =</span> <span class="kw">date_format</span>(<span class="st">&quot;%Y-%m&quot;</span>))
+p &lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.title.x =</span> <span class="kw">element_blank</span>()) +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">y =</span> <span class="st">&quot;average # of actions per post&quot;</span>, 
+    <span class="dt">title =</span> <span class="st">&quot;average number of likes per post for Black Box Fitness Facebook </span><span class="ch">\n</span><span class="st">, binned per month&quot;</span>)
+<span class="kw">print</span>(p)</code></pre>
+<p><img src="/figure/abq_cf_data-unnamed-chunk-2-1.png" title="" alt="" style="display: block; margin: auto;" /></p>
+<p>Is that interesting? Probably not, as any analysis would probably have to take some other lurking things into account - the number of people who “like” black box on facebook, number of posts they make perday, etc. Perhaps i’ll look at some of these things later.</p>
+<h2 id="next---comparing-a-bunch-of-crossfit-boxes">Next - comparing a bunch of crossfit boxes…</h2>
+<p>What could be more interesting is looking at how each box in Albuquerque leverages their social networks.</p>
+<p>scraping all the post data using the getPage function in Rfacebook:</p>
+<pre class="sourceCode r"><code class="sourceCode r">if (!<span class="kw">file.exists</span>(<span class="st">&quot;~/Dropbox/stats/blackbox/abqcf_data.csv&quot;</span>)) {
+    <span class="kw">print</span>(<span class="st">&quot;getting pages&quot;</span>)
+    cf_bbf &lt;-<span class="st"> </span><span class="kw">getPage</span>(<span class="st">&quot;blackboxfitness&quot;</span>, fb_oauth, <span class="dt">n =</span> <span class="dv">5000</span>)
+    cf_abq &lt;-<span class="st"> </span><span class="kw">getPage</span>(<span class="st">&quot;CrossFit-Albuquerque&quot;</span>, fb_oauth, <span class="dt">n =</span> <span class="dv">5000</span>)
+    cf_bigbarn &lt;-<span class="st"> </span><span class="kw">getPage</span>(<span class="st">&quot;BigBarnCrossfit&quot;</span>, fb_oauth, <span class="dt">n =</span> <span class="dv">5000</span>)
+    cf_petro &lt;-<span class="st"> </span><span class="kw">getPage</span>(<span class="st">&quot;crossfitpetroglyph&quot;</span>, fb_oauth, <span class="dt">n =</span> <span class="dv">5000</span>)
+    cf_dukecity &lt;-<span class="st"> </span><span class="kw">getPage</span>(<span class="st">&quot;DukeCityCrossFit&quot;</span>, fb_oauth, <span class="dt">n =</span> <span class="dv">5000</span>)
+    cf_cantina &lt;-<span class="st"> </span><span class="kw">getPage</span>(<span class="st">&quot;cantinacrossfit&quot;</span>, fb_oauth, <span class="dt">n =</span> <span class="dv">5000</span>)
+    cf_desertforge &lt;-<span class="st"> </span><span class="kw">getPage</span>(<span class="st">&quot;Desert-Forge-Crossfit&quot;</span>, fb_oauth, <span class="dt">n =</span> <span class="dv">5000</span>)
+    cf_hunger &lt;-<span class="st"> </span><span class="kw">getPage</span>(<span class="st">&quot;poweredbyprimal&quot;</span>, fb_oauth, <span class="dt">n =</span> <span class="dv">5000</span>)
+    <span class="co"># get rid of the annoying POWERED BY PRIMAL bit</span>
+    cf_hunger[, <span class="dv">2</span>] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;CrossFit Hunger&quot;</span>)
+    <span class="co"># added after initial post date</span>
+    cf_ttb &lt;-<span class="st"> </span><span class="kw">getPage</span>(<span class="st">&quot;crossfittothebone&quot;</span>, fb_oauth, <span class="dt">n =</span> <span class="dv">5000</span>)
+    cf_hellbox &lt;-<span class="st"> </span><span class="kw">getPage</span>(<span class="st">&quot;crossfithellbox&quot;</span>, fb_oauth, <span class="dt">n =</span> <span class="dv">5000</span>)
+    cf_sandstorm &lt;-<span class="st"> </span><span class="kw">getPage</span>(<span class="st">&quot;cfsandstorm&quot;</span>, fb_oauth, <span class="dt">n =</span> <span class="dv">5000</span>)
+    abqcf &lt;-<span class="st"> </span><span class="kw">rbind</span>(cf_bbf, cf_bigbarn, cf_petro, cf_dukecity, cf_cantina, cf_hunger)
+    abqcf$from_name &lt;-<span class="st"> </span><span class="kw">as.factor</span>(abqcf$from_name)
+    <span class="kw">write.csv</span>(abqcf, <span class="st">&quot;~/Dropbox/stats/blackbox/abqcf_data.csv&quot;</span>)
+}
+
+abqcf &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;~/Dropbox/stats/blackbox/abqcf_data.csv&quot;</span>)
+<span class="co"># gets rid of an annoying column left in by the csv write, silly bug or</span>
+<span class="co"># problem with me</span>
+abqcf &lt;-<span class="st"> </span>abqcf[, -<span class="dv">1</span>]</code></pre>
+<p>I have the following box’s data:</p>
+<ul>
+<li><a href="https://www.facebook.com/blackboxfitness">Black Box Fitness</a></li>
+<li><a href="https://www.facebook.com/BigBarnCrossfit">Big Barn Crossfit</a></li>
+<li><a href="https://www.facebook.com/crossfitpetroglyph">Crossfit Petrogylph</a></li>
+<li><a href="https://www.facebook.com/DukeCityCrossFit">Duke City Crossfit</a></li>
+<li><a href="https://www.facebook.com/cantinacrossfit">Cantina Crossfit</a></li>
+<li><a href="https://www.facebook.com/poweredbyprimal">Crossfit Hunger</a></li>
+<li><a href="link">Crossfit To the Bone</a></li>
+<li><a href="">Crossfit Hellbox</a></li>
+<li><a href="">Crossfit Sandstorm</a></li>
+</ul>
+<p>Also note that only six of the local boxes had publicly available facebook page data. If anyone from CF Abq or Sandia CF want to change their settings, I’d be happy to include them in all of this. Also, if i have missed any boxes, let me know.</p>
+<p>Looking at the most-liked/commented/shared posts, we see that:</p>
+<pre class="sourceCode r"><code class="sourceCode r">abqcf[<span class="kw">which.max</span>(abqcf$likes_count), <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">6</span>)]</code></pre>
+<pre><code>##             from_name  type
+## 168 Black Box Fitness photo
+##                                                                                                                            link
+## 168 https://www.facebook.com/photo.php?fbid=621816951186670&amp;set=a.345567808811587.73662.114224235279280&amp;type=1&amp;relevant_count=1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">abqcf[<span class="kw">which.max</span>(abqcf$comments_count), <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">6</span>)]</code></pre>
+<pre><code>##               from_name  type
+## 4197 Duke City CrossFit photo
+##                                                                                                                                  link
+## 4197 https://www.facebook.com/photo.php?fbid=703682639683274&amp;set=a.619772838074255.1073741834.195441880507355&amp;type=1&amp;relevant_count=1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">abqcf[<span class="kw">which.max</span>(abqcf$shares), <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">6</span>)]</code></pre>
+<pre><code>##              from_name  type
+## 1645 Black Box Fitness photo
+##                                                                                                                            link
+## 1645 https://www.facebook.com/photo.php?fbid=301687569866278&amp;set=a.123628401005530.9095.114224235279280&amp;type=1&amp;relevant_count=1</code></pre>
+<ul>
+<li>Black Box has the <a href="https://www.facebook.com/photo.php?fbid=621816951186670&amp;set=a.345567808811587.73662.114224235279280&amp;type=1&amp;relevant_count=1">most-liked post</a>, which just so happens to be a photo I did for them.</li>
+<li>Duke City Crossfit has the <a href="https://www.facebook.com/photo.php?fbid=703682639683274&amp;set=a.619772838074255.1073741834.195441880507355&amp;type=1&amp;relevant_count=1">most commented post</a>.</li>
+<li>Black Box also has the <a href="https://www.facebook.com/photo.php?fbid=301687569866278&amp;set=a.123628401005530.9095.114224235279280&amp;type=1&amp;relevant_count=1">most shared post</a> (a photo)</li>
+</ul>
+<p>We now have all of the data tucked away, so let’s refine it a bit:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># create data frame with average metric counts per month</span>
+abqcf$datetime &lt;-<span class="st"> </span><span class="kw">format.facebook.date</span>(abqcf$created_time)
+abqcf$month &lt;-<span class="st"> </span><span class="kw">format</span>(abqcf$datetime, <span class="st">&quot;%Y-%m&quot;</span>)
+abqcf$post_type &lt;-<span class="st"> </span><span class="kw">factor</span>(abqcf$type)
+<span class="co"># reorder(abqcf$post_type, c(&#39;status&#39;, &#39;link&#39;, &#39;question&#39;, &#39;photo&#39;,</span>
+<span class="co"># &#39;video&#39;)) change column names colnames(abqcf)</span>
+<span class="kw">colnames</span>(abqcf) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;post_id&quot;</span>, <span class="st">&quot;box&quot;</span>, <span class="st">&quot;post_text&quot;</span>, <span class="st">&quot;created_time&quot;</span>, <span class="st">&quot;post_type&quot;</span>, 
+    <span class="st">&quot;url&quot;</span>, <span class="st">&quot;post_id2&quot;</span>, <span class="st">&quot;likes&quot;</span>, <span class="st">&quot;comments&quot;</span>, <span class="st">&quot;shares&quot;</span>, <span class="st">&quot;datetime&quot;</span>, <span class="st">&quot;month&quot;</span>)
+<span class="co"># removing questions from the set</span>
+abqcf &lt;-<span class="st"> </span>abqcf[abqcf$post_type !=<span class="st"> &quot;question&quot;</span>, ]
+abqcf &lt;-<span class="st"> </span><span class="kw">droplevels</span>(abqcf)</code></pre>
+<p>So now we have the following, 11676 observations of the following variables:</p>
+<ul>
+<li>post_id</li>
+<li>box - business name (it’s a factor in R)</li>
+<li>post_text - text from the post, could do some sentiment analysis on this</li>
+<li>created_time - time of hte post</li>
+<li>post_type - video, photo, link, etc.</li>
+<li>likes</li>
+<li>comments</li>
+<li>shares</li>
+<li>datetime - POSIX date/time format</li>
+<li>month - month/year info</li>
+</ul>
+<p>Now, just a little worthless plot that isn’t terribly informative, as it just shows a bunch of points that show the number of likes per post over time. It’s overplotted, doesn’t account for anything really (size of page following ,etc.).</p>
+<pre class="sourceCode r"><code class="sourceCode r">p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(abqcf, <span class="kw">aes</span>(<span class="dt">x =</span> datetime, <span class="dt">y =</span> likes, <span class="dt">group =</span> box, <span class="dt">colour =</span> box)) +<span class="st"> </span>
+<span class="st">    </span><span class="co"># scale_x_date(breaks = &#39;years&#39;, labels = date_format(&#39;%Y-%m&#39;)) +</span>
+<span class="kw">geom_point</span>(<span class="kw">aes</span>()) +<span class="st"> </span><span class="co"># scale_color_manual(values = wes_palette(&#39;FantasticFox&#39;)) +</span>
+<span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Worthless plot of facebook likes </span><span class="ch">\n</span><span class="st"> over time for albuquerque crossfit boxes&quot;</span>, 
+    <span class="dt">x =</span> <span class="st">&quot;&quot;</span>)
+<span class="kw">print</span>(p)</code></pre>
+<p><img src="/figure/abq_cf_data-unnamed-chunk-6-1.png" title="" alt="" style="display: block; margin: auto;" /></p>
+<p>So, let’s try and do something more informative and look at the averages number of likes per box using <code>plyr</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(plyr)
+<span class="kw">library</span>(stargazer)
+<span class="co"># ddply(data.frame, variable(s), function, optional arguments)</span>
+means &lt;-<span class="st"> </span><span class="kw">ddply</span>(abqcf, .(box), summarise, <span class="dt">likes =</span> <span class="kw">mean</span>(likes), <span class="dt">comments =</span> <span class="kw">mean</span>(comments), 
+    <span class="dt">shares =</span> <span class="kw">mean</span>(shares))
+<span class="co"># get best post</span>
+maxes &lt;-<span class="st"> </span><span class="kw">ddply</span>(abqcf, .(box), summarise, <span class="dt">likes =</span> <span class="kw">max</span>(likes), <span class="dt">comments =</span> <span class="kw">max</span>(comments), 
+    <span class="dt">shares =</span> <span class="kw">max</span>(shares))
+average.likes &lt;-<span class="st"> </span><span class="kw">ddply</span>(abqcf, .(box), summarise, <span class="dt">avglikes =</span> <span class="kw">mean</span>(likes), <span class="dt">sd =</span> <span class="kw">sd</span>(likes))</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stargazer</span>(means, <span class="dt">caption =</span> <span class="st">&quot;Average number of likes, comments, and shares per post&quot;</span>, 
+    <span class="dt">digits =</span> <span class="dv">1</span>, <span class="dt">type =</span> <span class="st">&quot;html&quot;</span>, <span class="dt">summary =</span> <span class="ot">FALSE</span>)</code></pre>
+<table style="text-align:center">
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Big Barn CrossFit
+</td>
+<td>
+11.6
+</td>
+<td>
+1.3
+</td>
+<td>
+0.01
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Black Box Fitness
+</td>
+<td>
+6.1
+</td>
+<td>
+1.5
+</td>
+<td>
+0.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Cantina Crossfit
+</td>
+<td>
+8.1
+</td>
+<td>
+2.3
+</td>
+<td>
+0.03
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+CrossFit HellBox
+</td>
+<td>
+13.2
+</td>
+<td>
+2.1
+</td>
+<td>
+0.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+CrossFit Hunger
+</td>
+<td>
+5.6
+</td>
+<td>
+1.3
+</td>
+<td>
+0.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+CrossFit Petroglyph
+</td>
+<td>
+7.2
+</td>
+<td>
+0.8
+</td>
+<td>
+0.04
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+CrossFit Sandstorm
+</td>
+<td>
+4.8
+</td>
+<td>
+0.9
+</td>
+<td>
+0.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+CrossFit To The Bone
+</td>
+<td>
+8.2
+</td>
+<td>
+0.7
+</td>
+<td>
+0.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Duke City CrossFit
+</td>
+<td>
+6.7
+</td>
+<td>
+1.9
+</td>
+<td>
+0.1
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+</table>
+<table style="text-align:center">
+<tr>
+<td colspan="1" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td>
+Average number of likes, comments, and shares per post
+</td>
+</tr>
+<tr>
+<td colspan="1" style="border-bottom: 1px solid black">
+</td>
+</tr>
+</table>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stargazer</span>(maxes, <span class="dt">caption =</span> <span class="st">&quot;Highest number of likes, comments, and shares on a post&quot;</span>, 
+    <span class="dt">digits =</span> <span class="dv">1</span>, <span class="dt">type =</span> <span class="st">&quot;html&quot;</span>, <span class="dt">summary =</span> <span class="ot">FALSE</span>)</code></pre>
+<table style="text-align:center">
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Big Barn CrossFit
+</td>
+<td>
+127
+</td>
+<td>
+14
+</td>
+<td>
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Black Box Fitness
+</td>
+<td>
+183
+</td>
+<td>
+30
+</td>
+<td>
+142
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Cantina Crossfit
+</td>
+<td>
+75
+</td>
+<td>
+20
+</td>
+<td>
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+CrossFit HellBox
+</td>
+<td>
+120
+</td>
+<td>
+33
+</td>
+<td>
+24
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+CrossFit Hunger
+</td>
+<td>
+72
+</td>
+<td>
+61
+</td>
+<td>
+29
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+CrossFit Petroglyph
+</td>
+<td>
+37
+</td>
+<td>
+14
+</td>
+<td>
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+CrossFit Sandstorm
+</td>
+<td>
+65
+</td>
+<td>
+25
+</td>
+<td>
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+CrossFit To The Bone
+</td>
+<td>
+44
+</td>
+<td>
+15
+</td>
+<td>
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Duke City CrossFit
+</td>
+<td>
+174
+</td>
+<td>
+112
+</td>
+<td>
+31
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+</table>
+<table style="text-align:center">
+<tr>
+<td colspan="1" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td>
+Highest number of likes, comments, and shares on a post
+</td>
+</tr>
+<tr>
+<td colspan="1" style="border-bottom: 1px solid black">
+</td>
+</tr>
+</table>
+<pre class="sourceCode r"><code class="sourceCode r">p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(abqcf, <span class="kw">aes</span>(box, likes, <span class="dt">colour =</span> box, <span class="dt">group =</span> box, <span class="dt">fill =</span> box))
+p &lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">stat_summary</span>(<span class="dt">fun.y =</span> mean, <span class="dt">geom =</span> <span class="st">&quot;point&quot;</span>, <span class="dt">size =</span> <span class="dv">8</span>)
+p &lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">stat_summary</span>(<span class="dt">fun.data =</span> mean_cl_boot, <span class="dt">geom =</span> <span class="st">&quot;errorbar&quot;</span>, <span class="dt">width =</span> <span class="fl">0.2</span>, 
+    <span class="dt">size =</span> <span class="dv">1</span>)
+p &lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Average number of likes per post for </span><span class="ch">\n</span><span class="st"> all type of posts, mean and 95% confidence interval&quot;</span>, 
+    <span class="dt">x =</span> <span class="st">&quot;&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Average number of likes&quot;</span>)
+p &lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">45</span>, <span class="dt">hjust =</span> <span class="dv">1</span>))
+p</code></pre>
+<p><img src="/figure/abq_cf_data-unnamed-chunk-10-1.png" title="" alt="" style="display: block; margin: auto;" /></p>
+<p>And now let’s look at it by the type of post as well:</p>
+<pre class="sourceCode r"><code class="sourceCode r">p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(abqcf, <span class="kw">aes</span>(post_type, likes, <span class="dt">colour =</span> box, <span class="dt">group =</span> box, <span class="dt">fill =</span> box))
+p &lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">stat_summary</span>(<span class="dt">fun.y =</span> mean, <span class="dt">geom =</span> <span class="st">&quot;point&quot;</span>, <span class="dt">size =</span> <span class="dv">5</span>, <span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="dt">width =</span> <span class="dv">1</span>))
+p &lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">stat_summary</span>(<span class="dt">fun.data =</span> mean_cl_boot, <span class="dt">geom =</span> <span class="st">&quot;errorbar&quot;</span>, <span class="dt">width =</span> <span class="fl">0.2</span>, 
+    <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">position =</span> <span class="kw">position_dodge</span>(<span class="dt">width =</span> <span class="dv">1</span>))
+p &lt;-<span class="st"> </span>p +<span class="st"> </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Average number of likes per post type by box, </span><span class="ch">\n</span><span class="st"> mean and 95% confidence interval&quot;</span>, 
+    <span class="dt">x =</span> <span class="st">&quot;&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Average number of likes&quot;</span>)
+p</code></pre>
+<pre><code>## ymax not defined: adjusting position using y instead</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># py$ggplotly(p)</span></code></pre>
+<p><img src="/figure/abq_cf_data-unnamed-chunk-11-1.png" title="" alt="" style="display: block; margin: auto;" /></p>
+
+        <hr />
+        <footer class="page-footer">
+          
+
+
+<div class="author-image">
+	<img src="http://aarongonzales.net/images/avatar.jpg" alt="Aaron Gonzales">
+</div><!-- ./author-image -->
+<div class="author-content">
+	<h3 class="author-name" >Written by <span itemprop="author">Aaron Gonzales</span></h3>
+	<p class="author-bio">I'm a typically atypical guy.</p>
+</div><!-- ./author-content -->
+          <div class="inline-btn">
+	<a class="btn-social twitter" href="https://twitter.com/intent/tweet?text=Scraping%20Albuquerque%20Crossfit%20Data&amp;url=http://aarongonzales.net/posts/nerd/2014/04/10/abq_cf_data_new/&amp;via=binary_aaron" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter</a>
+	<a class="btn-social facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://aarongonzales.net/posts/nerd/2014/04/10/abq_cf_data_new/" target="_blank"><i class="fa fa-facebook" aria-hidden="true"></i> Share on Facebook</a>
+	<a class="btn-social google-plus"  href="https://plus.google.com/share?url=http://aarongonzales.net/posts/nerd/2014/04/10/abq_cf_data_new/" target="_blank"><i class="fa fa-google-plus" aria-hidden="true"></i> Share on Google+</a>
+</div><!-- /.share-this -->
+          <div class="page-meta">
+	<p>Updated <time datetime="2014-04-10T00:00:00Z" itemprop="datePublished">April 10, 2014</time></p>
+</div><!-- /.page-meta -->
+        </footer><!-- /.footer -->
+        <aside>
+          
+        </aside>
+      </div><!-- /.content -->
+    </div><!-- /.inner-wrap -->
+    
+  </article><!-- ./wrap -->
+</div><!-- /#main -->
+
+      <footer role="contentinfo" id="site-footer">
+	<nav role="navigation" class="menu bottom-menu">
+		<ul class="menu-item">
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/" >Home</a></li>
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/contact" >Contact</a></li>
+		
+		</ul>
+	</nav><!-- /.bottom-menu -->
+	<p class="copyright">&#169; 2017 <a href="http://aarongonzales.net">a hack of a hacker</a> powered by <a href="http://jekyllrb.com" rel="nofollow">Jekyll</a> + <a href="http://mmistakes.github.io/skinny-bones-jekyll/" rel="nofollow">Skinny Bones</a>.</p>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-11008365-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</footer>
+
+    </div>
+
+    <script src="http://aarongonzales.net/js/vendor/jquery-1.9.1.min.js"></script>
+    <script src="http://aarongonzales.net/js/main.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+    <link rel="stylesheet" href="/css/styles/custom.css">
+    <script src="/css/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+
+</html>

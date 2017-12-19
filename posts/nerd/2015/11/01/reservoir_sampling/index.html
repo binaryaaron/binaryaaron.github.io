@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Reservoir Sampling • a hack of a hacker</title>
+    <meta name="description" content="another take at this fun method.">
+    <meta name="keywords" content="data mining, data science, streaming, randomized algorithm">
+    
+    
+    	<!-- Twitter Cards -->
+	<meta name="twitter:title" content="Reservoir Sampling">
+	<meta name="twitter:description" content="another take at this fun method.">
+	
+	
+	
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="http://aarongonzales.net/images/abstract-11.jpg">
+	
+	<!-- Open Graph -->
+	<meta property="og:locale" content="">
+	<meta property="og:type" content="article">
+	<meta property="og:title" content="Reservoir Sampling">
+	<meta property="og:description" content="another take at this fun method.">
+	<meta property="og:url" content="http://aarongonzales.net/posts/nerd/2015/11/01/reservoir_sampling/">
+	<meta property="og:site_name" content="a hack of a hacker">
+
+    <link rel="canonical" href="http://aarongonzales.net/posts/nerd/2015/11/01/reservoir_sampling/"> 
+    <link href='https://fonts.googleapis.com/css?family=Crimson+Text' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.019/css/hack.min.css" type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Bitter:400italic' rel='stylesheet' type='text/css'>
+
+
+    <link href="http://aarongonzales.net/atom.xml" type="application/atom+xml" rel="alternate" title="a hack of a hacker Atom Feed">
+    <link href="http://aarongonzales.net/sitemap.xml" type="application/xml" rel="sitemap" title="Sitemap">
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="cleartype" content="on">
+
+    <link rel="stylesheet" href="http://aarongonzales.net/css/main.css">
+    <!-- HTML5 Shiv and Media Query Support for IE -->
+    <!--[if lt IE 9]>
+      <script src="http://aarongonzales.net/js/vendor/html5shiv.min.js"></script>
+      <script src="http://aarongonzales.net/js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body id="js-body">
+    <!--[if lt IE 9]><div class="upgrade notice-warning"><strong>Your browser is quite old!</strong> Why not <a href="http://whatbrowser.org/">upgrade to a newer one</a> to better enjoy this site?</div><![endif]-->
+
+    <header id="masthead">
+
+
+  <div class="inner-wrap">
+    <a href="http://aarongonzales.net/" class="site-title">a hack of a hacker</a>
+    <nav role="navigation" class="menu top-menu">
+        <ul class="menu-item">
+	<li class="home"><a href="/">a hack of a hacker</a></li>
+	
+    
+        
+    
+    <li><a href="http://aarongonzales.net/posts/" >Posts</a></li>
+  
+    
+        
+    
+    <li><a href="http://aarongonzales.net/about/" >About</a></li>
+  
+</ul>
+
+    </nav>
+  </div><!-- /.inner-wrap -->
+</header><!-- /.masthead -->
+
+    <nav role="navigation" id="js-menu" class="sliding-menu-content">
+  <h5>a hack of a hacker <span>Table of Contents</span></h5>
+  <ul class="menu-item">
+    <li>
+      <a href="http://aarongonzales.net/posts/">
+        <img src="http://aarongonzales.net/images/clouds.jpg" alt="teaser" class="teaser">
+        <div class="title">Posts</div>
+        <p class="excerpt">Writing, coursework, reports, and projects</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/about/">
+        <img src="http://aarongonzales.net/images/avatar_long.jpg" alt="teaser" class="teaser">
+        <div class="title">About</div>
+        <p class="excerpt">I'm a regular guy, except when I'm not. Learn more about me here.</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/portfolio/">
+        <img src="http://aarongonzales.net/images/blog/decision_tree_teaser.png" alt="teaser" class="teaser">
+        <div class="title">Portfolio</div>
+        <p class="excerpt">A smattering of my work</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/coursework/">
+        <img src="http://aarongonzales.net/images/ethereal.jpg" alt="teaser" class="teaser">
+        <div class="title">Coursework</div>
+        <p class="excerpt">Stuff from my courses that may be useful to someone</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/research/">
+        <img src="http://aarongonzales.net/images/blog/fb_clusters_teaser.jpg" alt="teaser" class="teaser">
+        <div class="title">Research</div>
+        <p class="excerpt">Research updates and commentary</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/friends/">
+        <img src="http://aarongonzales.net/images/blog/fb_network_long.jpg" alt="teaser" class="teaser">
+        <div class="title">Friends</div>
+        <p class="excerpt">People whom I follow or like</p>
+      </a>
+    </li>
+  </ul>
+</nav>
+<button type="button" id="js-menu-trigger" class="sliding-menu-button lines-button x2" role="button" aria-label="Toggle Navigation">
+  <span class="nav-lines"></span>
+</button>
+
+<div id="js-menu-screen" class="menu-screen"></div>
+
+
+    <div id="page-wrapper">
+      <div id="main" role="main">
+  <article class="wrap" itemscope itemtype="http://schema.org/Article">
+    
+    <div class="page-feature">
+      <div class="page-image">
+        <img src="http://aarongonzales.net/images/abstract-11.jpg" class="page-feature-image" alt="Reservoir Sampling" itemprop="image">
+        <div class="image-credit">Image source: <a href="http://www.dargadgetz.com/ios-7-abstract-wallpaper-pack-for-iphone-5-and-ipod-touch-retina/" itemprop="citation">dargadgetz</a></div><!-- /.image-credit -->
+      </div><!-- /.page-image -->
+    </div><!-- /.page-feature -->
+    
+    
+  <nav class="breadcrumbs">
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net" itemprop="url">
+        <span itemprop="title">Home</span>
+      </a> › 
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net/posts/" itemprop="url">
+        <span itemprop="title">Posts</span>
+      </a>
+    </span>
+  </nav><!-- /.breadcrumbs -->
+
+    <div class="page-title">
+      <h1>Reservoir Sampling</h1>
+    </div>
+    <div class="inner-wrap">
+      <nav class="toc"></nav><!-- /.toc -->
+      <div id="content" class="page-content" itemprop="articleBody">
+        <p class="notice-info">
+<strong>Content Warning:</strong>
+python, algorithms, data science
+</p>
+
+<style>
+.highlight .hll { background-color: #ffffcc }
+.highlight  { background: #f8f8f8; }
+.highlight .c { color: #93a1a1; font-style: italic } /* Comment */
+.highlight .err { border: 1px solid #FF0000 } /* Error */
+.highlight .k { color: #859900; font-weight: bold } /* Keyword */
+.highlight .o { color: #6c71c4} /* Operator */
+.highlight .ch { color: #93a1a1; font-style: italic } /* Comment.Hashbang */
+.highlight .cm { color: #408080; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #BC7A00 } /* Comment.Preproc */
+.highlight .cpf { color: #93a1a1; font-style: italic } /* Comment.PreprocFile */
+.highlight .c1 { color: #93a1a1; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #93a1a1; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #A00000 } /* Generic.Deleted */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #FF0000 } /* Generic.Error */
+.highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.highlight .gi { color: #00A000 } /* Generic.Inserted */
+.highlight .go { color: #888888 } /* Generic.Output */
+.highlight .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.highlight .gt { color: #0044DD } /* Generic.Traceback */
+.highlight .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.highlight .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { color: #008000 } /* Keyword.Pseudo */
+.highlight .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: #B00040 } /* Keyword.Type */
+.highlight .m { color: #666666 } /* Literal.Number */
+.highlight .s { color: #BA2121 } /* Literal.String */
+.highlight .na { color: #7D9029 } /* Name.Attribute */
+.highlight .nb { color: #008000 } /* Name.Builtin */
+.highlight .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.highlight .no { color: #880000 } /* Name.Constant */
+.highlight .nd { color: #AA22FF } /* Name.Decorator */
+.highlight .ni { color: #999999; font-weight: bold } /* Name.Entity */
+.highlight .ne { color: #D2413A; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #268bd2} /* Name.Function */
+.highlight .nl { color: #A0A000 } /* Name.Label */
+.highlight .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.highlight .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.highlight .nv { color: #19177C } /* Name.Variable */
+.highlight .ow { color: #6c71c4; font-weight: bold } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mb { color: #2aa198 } /* Literal.Number.Bin */
+.highlight .mf { color: #2aa198 } /* Literal.Number.Float */
+.highlight .mh { color: #2aa198 } /* Literal.Number.Hex */
+.highlight .mi { color: #2aa198 } /* Literal.Number.Integer */
+.highlight .mo { color: #2aa198 } /* Literal.Number.Oct */
+.highlight .sb { color: #2aa198} /* Literal.String.Backtick */
+.highlight .sc { color: #2aa198 } /* Literal.String.Char */
+.highlight .sd { color: #2aa198 } /* Literal.String.Doc */
+.highlight .s2 { color: #2aa198 } /* Literal.String.Double */
+.highlight .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
+.highlight .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.highlight .si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
+.highlight .sx { color: #2aa198 } /* Literal.String.Other */
+.highlight .sr { color: #2aa198 } /* Literal.String.Regex */
+.highlight .s1 { color: #2aa198 } /* Literal.String.Single */
+.highlight .ss { color: #2aa198 } /* Literal.String.Symbol */
+.highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #586e75 } /* Name.Variable.Class */
+.highlight .vg { color: #586e75 } /* Name.Variable.Global */
+.highlight .vi { color: #586e75 } /* Name.Variable.Instance */
+.highlight .il { color: #2aa198 } /* Literal.Number.Integer.Long */
+</style>
+
+
+<style type="text/css">
+/* Overrides of notebook CSS for static HTML export */
+body {
+  overflow: visible;
+  padding: 8px;
+}
+
+div#notebook {
+  overflow: visible;
+  border-top: none;
+}
+
+@media print {
+  div.cell {
+    display: block;
+    page-break-inside: avoid;
+  } 
+  div.output_wrapper { 
+    display: block;
+    page-break-inside: avoid; 
+  }
+  div.output { 
+    display: block;
+    page-break-inside: avoid; 
+  }
+}
+</style>
+
+<!-- Custom stylesheet, it must be in the same directory as the html file -->
+
+<!-- Loading mathjax macro -->
+<!-- Load mathjax -->
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+    <!-- MathJax configuration -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+            processEscapes: true,
+            processEnvironments: true
+        },
+        // Center justify equations in code and markdown cells. Elsewhere
+        // we use CSS to left justify single line equations in code cells.
+        displayAlign: 'center',
+        "HTML-CSS": {
+            styles: {'.MathJax_Display': {"margin": 0}},
+            linebreaks: { automatic: true }
+        }
+    });
+    </script>
+    <!-- End of mathjax configuration --></head>
+<body>
+  <div tabindex="-1" id="notebook" class="border-box-sizing">
+    <div class="container" id="notebook-container">
+
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="k">import</span> <span class="n">jit</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;bmh&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>What do you do when you want to take a random sample from a data stream where the size of that stream is unknown or will never end? Sampling is used for all manner of inference and analytic tools and it certainly seems like a useful thing to do, but the standard approach to taking random samples (sample each element with $1/n$ probability where $n$ is the number of items in your set) fails when you have a stream like this.</p>
+<p>Plenty of folks have written about this problem and its variants, but here is my take on it and a little demonstration for the non-believers.</p>
+<p>Formally, we can define the problem as:</p>
+<ul>
+<li>How do we sample $k$ elements from a stream $X$ with length $n >> k$? </li>
+</ul>
+<p>The basic approach here is to make a reservoir to hold the $k$ elements and replace items <em>in the reservior</em> with certain probabilities.</p>
+<p>Let $X = \{x_1, x_2, ..., x_i\}$. 
+First, keep all elements in the reservoir up to size $k$. This is your base.</p>
+<p>For every remaining $x \in X$, we decide to keep $x_i$ with probability $\frac{1}{n}$, where $n$ is the number of items we've encountered from $X$ thus far. Since we only replace elements in the reservoir when we choose to keep $x_i$, any item in the reservoir has an $\frac{n-1}{n}$ probability of being kept.</p>
+<p>This gives us an overall probability of keeping $x_i$ of 
+$$\frac{1}{n-1} \times \frac{n-1}{n}$$
+$$= \frac{1}{n}$$</p>
+<p>If we do keep $x_i$, we simply replace an item from the reservoir at random with $x_i$.</p>
+<p>In python, the function might look something like this:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="k">def</span> <span class="nf">reservoir_sample</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    maintains a random sample from a stream.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        stream: iterable item</span>
+<span class="sd">        size: size of the sample you want</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">reservoir</span> <span class="o">=</span> <span class="p">[]</span>    
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">size</span><span class="p">:</span>
+            <span class="n">reservoir</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">i</span><span class="p">):</span>
+            <span class="n">reservoir</span><span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="k">return</span> <span class="n">reservoir</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Python's nifty generators make defining streams easy. Let's test our algorithm over two distributions, gaussian and uniform, to see if the resulting samples are representative of the streams.</p>
+<p>I also took the opportunity to test Anaconda's <a href="http://numba.pydata.org">numba</a> just-in-time compiler, which handily is invoked with a decorator.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gauss</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mi">15</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gives a gaussian distributed stream with definable mean and std.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        size: size of the stream</span>
+<span class="sd">        mean: mean of the gaussian distribution</span>
+<span class="sd">        std: standard devaiation of the gaussian dist</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># return numbers with mean = 100, std = 15</span>
+    <span class="k">while</span> <span class="n">size</span><span class="p">:</span>
+        <span class="n">size</span><span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">yield</span> <span class="nb">int</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">gauss</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">))</span>
+
+<span class="nd">@jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">unif</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gives a uniform distributed stream with definable range</span>
+<span class="sd">    Args:</span>
+<span class="sd">        size: size of the stream</span>
+<span class="sd">        low: lower bound of the uniform range</span>
+<span class="sd">        high: upper bound of the uniform range</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># keep the range inclusive of upper bound</span>
+    <span class="n">upper</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">size</span><span class="p">:</span>
+        <span class="n">size</span><span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">yield</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">stream_size</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="mi">7</span>
+<span class="n">samp_size</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="mi">5</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">%%</span><span class="k">time</span>
+# no numba
+res_gauss = reservoir_sample(gauss(stream_size), samp_size)
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>CPU times: user 15.4 s, sys: 39.7 ms, total: 15.4 s
+Wall time: 15.5 s
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">%%</span><span class="k">time</span>
+# no numba
+res_unif = reservoir_sample(unif(stream_size), samp_size)
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>CPU times: user 19.5 s, sys: 106 ms, total: 19.6 s
+Wall time: 20 s
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">%%</span><span class="k">time</span>
+#numba
+res_gauss = reservoir_sample(gauss(stream_size), samp_size)
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>CPU times: user 3.72 s, sys: 25.3 ms, total: 3.74 s
+Wall time: 3.82 s
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">%%</span><span class="k">time</span>
+#numba
+res_unif = reservoir_sample(unif(stream_size), samp_size)
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>CPU times: user 3.26 s, sys: 14.4 ms, total: 3.28 s
+Wall time: 3.31 s
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="results">results<a class="anchor-link" href="#results">&#182;</a></h3><p>hey, we got a significant speedup from numba -- pretty cool.</p>
+<p>Let's see how these reservoirs look:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">samp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+<span class="n">samp</span><span class="p">[</span><span class="s1">&#39;gauss&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">res_gauss</span>
+<span class="n">samp</span><span class="p">[</span><span class="s1">&#39;unif&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">res_unif</span>
+<span class="n">samp</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[10]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>gauss</th>
+      <th>unif</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>100000.000000</td>
+      <td>100000.000000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>99.495450</td>
+      <td>99.910240</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>14.912345</td>
+      <td>29.177916</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>39.000000</td>
+      <td>50.000000</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>89.000000</td>
+      <td>75.000000</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>99.000000</td>
+      <td>100.000000</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>110.000000</td>
+      <td>125.000000</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>162.000000</td>
+      <td>150.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">gauss_range</span> <span class="o">=</span> <span class="n">samp</span><span class="o">.</span><span class="n">gauss</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">samp</span><span class="o">.</span><span class="n">gauss</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="n">unif_range</span> <span class="o">=</span> <span class="n">samp</span><span class="o">.</span><span class="n">unif</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">samp</span><span class="o">.</span><span class="n">unif</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="n">samp</span><span class="o">.</span><span class="n">unif</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">unif_range</span><span class="p">)</span>
+<span class="n">samp</span><span class="o">.</span><span class="n">gauss</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">gauss_range</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;reservoirs sampled from gaussian and uniform distributions&quot;</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">Out[11]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;matplotlib.text.Text at 0x11a05fdd8&gt;</pre>
+</div>
+
+</div>
+
+<div class="output_area"><div class="prompt"></div>
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+JSfloy5p1MRHps7Htigbud79CgAA0Cxy3akjU5dGjsFHps5HdsxHXdKoiY9MnY9tUTZy3akDAABo
+FqdoYbMAABJ3SURBVLnu1JGpSyPH4OM8dT5yUj7qkkZNfGTqfGyLspHrAyUAAANP4RQnkjRi26F1
+bg0wcOR6pI5MXRo5Bh+ZOh85KR91SatmTaJTnDwUHdG9fkPVllsPZOp8bIuyketOHQAAQLPIdaeO
+TF0aOQYfmTofOSkfdUmjJj4ydT62RdkgUwcMUMmrSHAFCQBAQ4zUmdnrZjbfzH5rZi3xvBFm9riZ
+vWpmPzOz4Yn7f9rMlpjZy2Z2UXfLJVOXRo7BNyAzdfFVJLbf95C0a3cmT0F2zEdd0qiJj0ydj21R
+NhqiUyepU9IFIYQzQwhT43m3S3oyhHCypKclfVqSzOw0SVdIOlXS+yTdY2ZWhzYDAAA0jEbp1JnS
+bblM0v3x3/dLujz++1JJ3w0htIcQXpe0RNJUOcjUpZFj8JGp85GT8lGXtKxqUji9SeHfiG2bM3me
+rJCp87EtykajZOqCpCfMrEPSN0II90o6MoSwTpJCCK1mVvjGGC3p2cRjV8fzAAA5E53e5OF9M465
+SY2z6QIaS6N8Mt4dQlhrZm+X9LiZvaqoo5dUOt2ru+++WwcffLDGjh0rSRo+fLgmTpxY/IVQ2Kff
+TNMLFy7UzTff3BDteemF57RtWWvxl+y8lme1bdnq4nQhi1I6rQuP63Z64aHrJB0pKcrJbVu2tvj4
+0unk8gu3VbL8vj5ftZY/d9F8rdjeVhwhKWSaSqcLVmxv06Ali3V8YvrFVxYVb3/xlUVdlvfiK4v0
+6/Wv6V1vP6ns5ZdOJ5ff2/Mt2tyqVdt3Z7b80un+vJ7C31ktvz+vp171+vX617R3/1F6ZzfLX7S5
+VUOWLO72+cqt13vj6Uo/L/39Punz5z1eZlbLr+T1zGtZrzMuj2Lo9f7+nzlzZtNvjwvmzJmjlStX
+SpKmTJmiadOmqa8aolMXQlgb/7/ezH6oaHfqOjM7MoSwzsxGSSp8wldLOibx8DHxvJTzzz9fN9xw
+Q7fPWzr8y3Rtp98x5RwN2/Z6cXrS1HM1bMPS4nTpbotypidOOU7ff3KFpGiX6rAtK4q3l073d/lZ
+PF8ly5884QxtHdpSnC7d/eVNn37iadq+eFVx+qxTJuixn0Ub3rNOmaD1Q/dthM86ZYJahjxT0fJL
+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
+ENSA3wDSFkhqlPvbuAAAAABJRU5ErkJggg==
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>They look pretty good to me...</p>
+
+</div>
+</div>
+</div>
+    </div>
+  </div>
+</body>
+</html>
+
+        <hr />
+        <footer class="page-footer">
+          
+
+
+<div class="author-image">
+	<img src="http://aarongonzales.net/images/avatar.jpg" alt="Aaron Gonzales">
+</div><!-- ./author-image -->
+<div class="author-content">
+	<h3 class="author-name" >Written by <span itemprop="author">Aaron Gonzales</span></h3>
+	<p class="author-bio">I'm a typically atypical guy.</p>
+</div><!-- ./author-content -->
+          <div class="inline-btn">
+	<a class="btn-social twitter" href="https://twitter.com/intent/tweet?text=Reservoir%20Sampling&amp;url=http://aarongonzales.net/posts/nerd/2015/11/01/reservoir_sampling/&amp;via=" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter</a>
+	<a class="btn-social facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://aarongonzales.net/posts/nerd/2015/11/01/reservoir_sampling/" target="_blank"><i class="fa fa-facebook" aria-hidden="true"></i> Share on Facebook</a>
+	<a class="btn-social google-plus"  href="https://plus.google.com/share?url=http://aarongonzales.net/posts/nerd/2015/11/01/reservoir_sampling/" target="_blank"><i class="fa fa-google-plus" aria-hidden="true"></i> Share on Google+</a>
+</div><!-- /.share-this -->
+          <div class="page-meta">
+	<p>Updated <time datetime="2015-11-01T00:00:00Z" itemprop="datePublished">November 01, 2015</time></p>
+</div><!-- /.page-meta -->
+        </footer><!-- /.footer -->
+        <aside>
+          
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'hackofahacker'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+        </aside>
+      </div><!-- /.content -->
+    </div><!-- /.inner-wrap -->
+    
+  </article><!-- ./wrap -->
+</div><!-- /#main -->
+
+      <footer role="contentinfo" id="site-footer">
+	<nav role="navigation" class="menu bottom-menu">
+		<ul class="menu-item">
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/" >Home</a></li>
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/contact" >Contact</a></li>
+		
+		</ul>
+	</nav><!-- /.bottom-menu -->
+	<p class="copyright">&#169; 2017 <a href="http://aarongonzales.net">a hack of a hacker</a> powered by <a href="http://jekyllrb.com" rel="nofollow">Jekyll</a> + <a href="http://mmistakes.github.io/skinny-bones-jekyll/" rel="nofollow">Skinny Bones</a>.</p>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-11008365-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</footer>
+
+    </div>
+
+    <script src="http://aarongonzales.net/js/vendor/jquery-1.9.1.min.js"></script>
+    <script src="http://aarongonzales.net/js/main.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+    <link rel="stylesheet" href="/css/styles/custom.css">
+    <script src="/css/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+
+</html>

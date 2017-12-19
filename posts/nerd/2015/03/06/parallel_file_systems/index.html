@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Reading group, Data-Centric Parallel FIle Systems • a hack of a hacker</title>
+    <meta name="description" content="Lessons learned from deploying large-scale data-centric parallel file systems.">
+    <meta name="keywords" content="systems, supercomputing, file systems, scalable software">
+    
+    
+    	<!-- Twitter Cards -->
+	<meta name="twitter:title" content="Reading group, Data-Centric Parallel FIle Systems">
+	<meta name="twitter:description" content="Lessons learned from deploying large-scale data-centric parallel file systems.">
+	<meta name="twitter:site" content="@binary_aaron">
+	<meta name="twitter:creator" content="@binary_aaron">
+	
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:image" content="http://aarongonzales.net/images/gggraph_crop.jpeg">
+	
+	<!-- Open Graph -->
+	<meta property="og:locale" content="">
+	<meta property="og:type" content="article">
+	<meta property="og:title" content="Reading group, Data-Centric Parallel FIle Systems">
+	<meta property="og:description" content="Lessons learned from deploying large-scale data-centric parallel file systems.">
+	<meta property="og:url" content="http://aarongonzales.net/posts/nerd/2015/03/06/parallel_file_systems/">
+	<meta property="og:site_name" content="a hack of a hacker">
+
+    <link rel="canonical" href="http://aarongonzales.net/posts/nerd/2015/03/06/parallel_file_systems/"> 
+    <link href='https://fonts.googleapis.com/css?family=Crimson+Text' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.019/css/hack.min.css" type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Bitter:400italic' rel='stylesheet' type='text/css'>
+
+
+    <link href="http://aarongonzales.net/atom.xml" type="application/atom+xml" rel="alternate" title="a hack of a hacker Atom Feed">
+    <link href="http://aarongonzales.net/sitemap.xml" type="application/xml" rel="sitemap" title="Sitemap">
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="cleartype" content="on">
+
+    <link rel="stylesheet" href="http://aarongonzales.net/css/main.css">
+    <!-- HTML5 Shiv and Media Query Support for IE -->
+    <!--[if lt IE 9]>
+      <script src="http://aarongonzales.net/js/vendor/html5shiv.min.js"></script>
+      <script src="http://aarongonzales.net/js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body id="js-body">
+    <!--[if lt IE 9]><div class="upgrade notice-warning"><strong>Your browser is quite old!</strong> Why not <a href="http://whatbrowser.org/">upgrade to a newer one</a> to better enjoy this site?</div><![endif]-->
+
+    <header id="masthead">
+
+
+  <div class="inner-wrap">
+    <a href="http://aarongonzales.net/" class="site-title">a hack of a hacker</a>
+    <nav role="navigation" class="menu top-menu">
+        <ul class="menu-item">
+	<li class="home"><a href="/">a hack of a hacker</a></li>
+	
+    
+        
+    
+    <li><a href="http://aarongonzales.net/posts/" >Posts</a></li>
+  
+    
+        
+    
+    <li><a href="http://aarongonzales.net/about/" >About</a></li>
+  
+</ul>
+
+    </nav>
+  </div><!-- /.inner-wrap -->
+</header><!-- /.masthead -->
+
+    <nav role="navigation" id="js-menu" class="sliding-menu-content">
+  <h5>a hack of a hacker <span>Table of Contents</span></h5>
+  <ul class="menu-item">
+    <li>
+      <a href="http://aarongonzales.net/posts/">
+        <img src="http://aarongonzales.net/images/clouds.jpg" alt="teaser" class="teaser">
+        <div class="title">Posts</div>
+        <p class="excerpt">Writing, coursework, reports, and projects</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/about/">
+        <img src="http://aarongonzales.net/images/avatar_long.jpg" alt="teaser" class="teaser">
+        <div class="title">About</div>
+        <p class="excerpt">I'm a regular guy, except when I'm not. Learn more about me here.</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/portfolio/">
+        <img src="http://aarongonzales.net/images/blog/decision_tree_teaser.png" alt="teaser" class="teaser">
+        <div class="title">Portfolio</div>
+        <p class="excerpt">A smattering of my work</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/coursework/">
+        <img src="http://aarongonzales.net/images/ethereal.jpg" alt="teaser" class="teaser">
+        <div class="title">Coursework</div>
+        <p class="excerpt">Stuff from my courses that may be useful to someone</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/research/">
+        <img src="http://aarongonzales.net/images/blog/fb_clusters_teaser.jpg" alt="teaser" class="teaser">
+        <div class="title">Research</div>
+        <p class="excerpt">Research updates and commentary</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/friends/">
+        <img src="http://aarongonzales.net/images/blog/fb_network_long.jpg" alt="teaser" class="teaser">
+        <div class="title">Friends</div>
+        <p class="excerpt">People whom I follow or like</p>
+      </a>
+    </li>
+  </ul>
+</nav>
+<button type="button" id="js-menu-trigger" class="sliding-menu-button lines-button x2" role="button" aria-label="Toggle Navigation">
+  <span class="nav-lines"></span>
+</button>
+
+<div id="js-menu-screen" class="menu-screen"></div>
+
+
+    <div id="page-wrapper">
+      <div id="main" role="main">
+  <article class="wrap" itemscope itemtype="http://schema.org/Article">
+    
+    
+  <nav class="breadcrumbs">
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net" itemprop="url">
+        <span itemprop="title">Home</span>
+      </a> › 
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net/posts/" itemprop="url">
+        <span itemprop="title">Posts</span>
+      </a>
+    </span>
+  </nav><!-- /.breadcrumbs -->
+
+    <div class="page-title">
+      <h1>Reading group, Data-Centric Parallel FIle Systems</h1>
+    </div>
+    <div class="inner-wrap">
+      <nav class="toc"></nav><!-- /.toc -->
+      <div id="content" class="page-content" itemprop="articleBody">
+        <p class="notice-info">
+<strong>Content Warning:</strong> Systems Paper
+</p>
+<p><a href="http://users.nccs.gov/~vazhkuda/SC14-SOP-Spider.pdf">Best practices and lessons learned from deploying and operating large-scale data-centric parallel file systems</a>.</p>
+<h2 id="summary">Summary</h2>
+<p>This is review/state-of-the-practice paper from ORNL regarding their various experiences with huge parallel file systems.</p>
+<h3 id="introduction">Introduction</h3>
+<ul>
+<li>Data sharing is required from the computing resources in an HPC system.</li>
+<li>Data centric models of PFS</li>
+<li>ORNL started research into DCPFS in 2005</li>
+</ul>
+<p>A central challenge of the model is to retain data sharing flexibility while maintaining performance. This is <em>apparently</em> no small task. (Duh.)</p>
+<ul>
+<li>Spider systems used for storage</li>
+<li>Spider I : 240 GB/s IO, 10PB total storage</li>
+<li>Spider II : 1 TB/s IO, 32PB total storage</li>
+<li>both built on Lustre</li>
+</ul>
+<h3 id="design-principles">Design Principles</h3>
+<ul>
+<li>Data islands:
+<ul>
+<li>No need to transfer data to another system after simulation</li>
+</ul></li>
+<li>IO models:
+<ul>
+<li>High bandwidth</li>
+<li>High checkpoint storage usage</li>
+<li>High read / latency constrained</li>
+</ul></li>
+</ul>
+<h4 id="lessons">Lessons</h4>
+<ul>
+<li>Talk to your users, customers, and people to understand the workloads</li>
+<li>model or understand your I/O patterns</li>
+</ul>
+<h3 id="procurement">Procurement</h3>
+<h4 id="rfps">RFPs</h4>
+<p>Nothing of personal interest here? RFPs are hard and you should let you PI make them? Computers are expensive? File sytems are expensive?</p>
+<ul>
+<li>SSU - scalable system unit</li>
+</ul>
+<h4 id="benchmarks">Benchmarks</h4>
+<p>Run them. Sequential, random, other I/O Patterns that fit your organization’s needs.</p>
+<h3 id="integration">Integration</h3>
+<p>Short notes: It’s complicated.</p>
+<p>Centralize infrastructure services between disparate systems, harden them, and retain centralized control and security.</p>
+<ul>
+<li>Diskless nodes ares great! Use them.</li>
+<li>Script away all the painful imaging</li>
+<li>Use ramdisks for some node files</li>
+</ul>
+<p>Monitoring:</p>
+<ul>
+<li>It’s a big deal</li>
+<li>Store log data in database for easy of retrieval</li>
+<li>granularity?</li>
+</ul>
+<p>Development:</p>
+<ul>
+<li>Develop with vendor and software roadmaps in mind</li>
+<li>Segregate extreme loads from other stuff using namespaces and other system tools</li>
+</ul>
+<p>Storage and IO tuning</p>
+<ul>
+<li>Identify slow disks quickly and replace them.</li>
+<li>Data locality optimizations</li>
+<li>torus model used for router placement</li>
+<li>congestion, logical and pysical layout, etc.</li>
+<li>scaling tests
+<ul>
+<li>critical! they are expensive but worthwhile</li>
+<li>identified optimal 1mb IO transfer sizes</li>
+</ul></li>
+</ul>
+<h3 id="higher-level-services">Higher level services</h3>
+<h3 id="section"></h3>
+<blockquote>
+<p>“The real performance of a data centric PFS is what users observer. Expose infrastructure details to users in an easy-to-use programmable fashion to achieve higher performance for advanced users.”</p>
+</blockquote>
+<p>Scalable linux tools for use on huge systems.</p>
+<ul>
+<li>cp</li>
+<li>find</li>
+<li>tar</li>
+</ul>
+<p>Changed to parallel versions via several company efforts.</p>
+
+        <hr />
+        <footer class="page-footer">
+          
+
+
+<div class="author-image">
+	<img src="http://aarongonzales.net/images/avatar.jpg" alt="Aaron Gonzales">
+</div><!-- ./author-image -->
+<div class="author-content">
+	<h3 class="author-name" >Written by <span itemprop="author">Aaron Gonzales</span></h3>
+	<p class="author-bio">I'm a typically atypical guy.</p>
+</div><!-- ./author-content -->
+          <div class="inline-btn">
+	<a class="btn-social twitter" href="https://twitter.com/intent/tweet?text=Reading%20group,%20Data-Centric%20Parallel%20FIle%20Systems&amp;url=http://aarongonzales.net/posts/nerd/2015/03/06/parallel_file_systems/&amp;via=binary_aaron" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter</a>
+	<a class="btn-social facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://aarongonzales.net/posts/nerd/2015/03/06/parallel_file_systems/" target="_blank"><i class="fa fa-facebook" aria-hidden="true"></i> Share on Facebook</a>
+	<a class="btn-social google-plus"  href="https://plus.google.com/share?url=http://aarongonzales.net/posts/nerd/2015/03/06/parallel_file_systems/" target="_blank"><i class="fa fa-google-plus" aria-hidden="true"></i> Share on Google+</a>
+</div><!-- /.share-this -->
+          <div class="page-meta">
+	<p>Updated <time datetime="2015-03-06T00:00:00Z" itemprop="datePublished">March 06, 2015</time></p>
+</div><!-- /.page-meta -->
+        </footer><!-- /.footer -->
+        <aside>
+          
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'hackofahacker'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+        </aside>
+      </div><!-- /.content -->
+    </div><!-- /.inner-wrap -->
+    
+  </article><!-- ./wrap -->
+</div><!-- /#main -->
+
+      <footer role="contentinfo" id="site-footer">
+	<nav role="navigation" class="menu bottom-menu">
+		<ul class="menu-item">
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/" >Home</a></li>
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/contact" >Contact</a></li>
+		
+		</ul>
+	</nav><!-- /.bottom-menu -->
+	<p class="copyright">&#169; 2017 <a href="http://aarongonzales.net">a hack of a hacker</a> powered by <a href="http://jekyllrb.com" rel="nofollow">Jekyll</a> + <a href="http://mmistakes.github.io/skinny-bones-jekyll/" rel="nofollow">Skinny Bones</a>.</p>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-11008365-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</footer>
+
+    </div>
+
+    <script src="http://aarongonzales.net/js/vendor/jquery-1.9.1.min.js"></script>
+    <script src="http://aarongonzales.net/js/main.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+    <link rel="stylesheet" href="/css/styles/custom.css">
+    <script src="/css/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+
+</html>

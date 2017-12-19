@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<!-- saved from url=(0042)http://localhost:1948/dart_mpi_slides.md#/ -->
+<html lang="en" hola_ext_inject="ready"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <title>Reveal.js</title>
+        <link rel="stylesheet" href="http://localhost:1948/css/reveal.css">
+        <link rel="stylesheet" href="http://localhost:1948/css/theme/black.css" id="theme">
+        <!-- For syntax highlighting -->
+        <link rel="stylesheet" href="http://localhost:1948/lib/css/zenburn.css">
+
+        <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+        <script>
+          document.write( '<link rel="stylesheet" href="/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+        </script><style type="text/css"></style><link rel="stylesheet" href="./pgas_files/paper.css" type="text/css" media="print">
+    </head>
+    <body hola-ext-player="1" class=" hasGoogleVoiceExt">
+
+        <div class="reveal default center" role="application" data-transition-speed="default" data-background-transition="fade">
+            <div class="slides" style="width: 960px; height: 700px; zoom: 0.9065625;"><section data-markdown="" data-markdown-parsed="true" class="present" style="top: 113px; display: block;"><h1>DART-MPI: PGAS via MPI</h1>
+<ul>
+<li>Aaron Gonzales</li>
+<li>SSL Reading Group</li>
+<li>2015-03-20</li>
+</ul>
+</section><section data-markdown="" data-markdown-parsed="true" hidden="" aria-hidden="true" class="future" style="top: 214.5px; display: block;"><h2>High-level summary</h2>
+<ul>
+<li>PGAS is cool</li>
+<li>DART-MPI implements PGAS via MPI-3 on HPC sytems</li>
+</ul>
+<aside class="notes" data-markdown="">Mention Dorian's motivation for the paper - intro to MPI and uPC style
+lang</aside></section><section style="top: 0px; display: block;" hidden="" aria-hidden="true" class="stack future"><section data-markdown="" data-markdown-parsed="true" style="top: 197.5px; display: block;"><h3>PGAS</h3>
+<ul>
+<li>distributed systems can access memory as if it was shared on a global level</li>
+<li>allows easier development of parallel applications</li>
+</ul>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><ul>
+<li>PGAS: collection of threads in PGAS logically distributed between threads.<ul>
+<li>Thread has affinity with portion of shared space. each thread has private space</li>
+</ul>
+</li>
+</ul>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><p>The following is adapted from <a href="https://www.osc.edu/sites/osc.edu/files/staff_files/dhudak/pgas-tutorial.pdf">these slides</a></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h3>Memory Model</h3>
+<table>
+<thead>
+<tr>
+<th>Thread_1</th>
+<th>Thread_2</th>
+<th>Shared Space</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Private_1</td>
+<td>Private_2</td>
+</tr>
+</tbody>
+</table>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h3>Sequential Vector Addition</h3>
+<p>using <em>U</em>niversal <em>P</em>arallel <em>C</em>, an ANSI C deriviative</p>
+<pre><code class="{.c} hljs cs"><span class="hljs-preprocessor"># <span class="hljs-keyword">define</span> N 1000</span>
+
+<span class="hljs-keyword">int</span> v1[N], v2[N], v1plusv2[n];
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-keyword">int</span> i;
+    <span class="hljs-keyword">for</span> (i=<span class="hljs-number">0</span>; i&lt;n; i++)
+        v1plusv2[i] = v1[i]+v2[i];
+}</code></pre>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h3>Parallelized</h3>
+<pre><code class="{.c} hljs cs"><span class="hljs-preprocessor">#include &lt;upc.h&gt;</span>
+<span class="hljs-preprocessor">#<span class="hljs-keyword">define</span> N 1000</span>
+
+shared <span class="hljs-keyword">int</span> v1[N], v2[N], v1plusv2[N];
+<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">()</span>
+</span>{
+     <span class="hljs-keyword">int</span> i;
+     upc_forall (i=<span class="hljs-number">0</span>; i&lt;N; i++; &amp;v1plusv2[N])
+         v1plusv2[i]=v1[i]+v2[i];
+}</code></pre>
+<p>  \begin{align}
+    \label{imgseq<em>min}
+    \max(a) = \sum</em>{i \in A}  a<em>i + \sum</em>{i \in B} b<em>i − \sum</em>{(i,j) \in E, | A \cap {i,j} | = 1} p_{i,j} 
+  \end{align}</p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h3>pointer differences</h3>
+<ul>
+<li>pointer to shared (<code>shared int *p</code>) references <em>all</em> locations in shared space</li>
+<li>pointer to local (<code>int *i</code>) is a standard c pointer but only can reference private space</li>
+</ul>
+<pre><code class="{.c} hljs nimrod"><span class="hljs-type">int</span> *p1;                // private local <span class="hljs-type">pointer</span>
+<span class="hljs-literal">shared</span> <span class="hljs-type">int</span> *p2;         // private <span class="hljs-literal">shared</span> <span class="hljs-type">pointer</span> to <span class="hljs-literal">shared</span> space
+<span class="hljs-type">int</span> *<span class="hljs-literal">shared</span> p3;         // <span class="hljs-literal">shared</span> local <span class="hljs-type">pointer</span>
+<span class="hljs-literal">shared</span> <span class="hljs-type">int</span> *<span class="hljs-literal">shared</span> p4`; // <span class="hljs-literal">shared</span> <span class="hljs-type">pointer</span> pointing to the <span class="hljs-literal">shared</span> space</code></pre>
+</section></section><section style="top: 330px; display: none;" hidden="" aria-hidden="true" class="stack future"><section data-markdown="" data-markdown-parsed="true" style="top: 330px; display: none;"><h2>MPI Overview</h2>
+<ul>
+<li>Standard message passing interface, typically used for two-sided communications.</li>
+<li>requires direct RMA for reduced latency to remote memories</li>
+<li>two-sided is not efficient for RMA in PGAS</li>
+</ul>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h3>Input from Dorian?</h3>
+</section></section><section data-markdown="" data-markdown-parsed="true" hidden="" aria-hidden="true" class="future" style="top: 214.5px; display: block;"><h2>Overall comments</h2>
+<ul>
+<li>reads a bit like a program manual and not like a research paper</li>
+</ul>
+</section><section style="top: 0px; display: block;" hidden="" aria-hidden="true" class="stack future"><section data-markdown="" data-markdown-parsed="true" style="top: 263.5px; display: block;"><h2>Questions</h2>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 256px; display: block;"><h4>Would anyone use this over another PGAS language?</h4>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Are the evaluation metrics decent?</h4>
+<ul>
+<li>Data Transfer Completion Time</li>
+<li><p>Data Transfer Initiation Time</p>
+<ul>
+<li><em>Intr<strong>a</strong> NUMA</em> performance<ul>
+<li>Two processing units on same NUMA domain</li>
+</ul>
+</li>
+<li><em>Int<strong>er</strong> NUMA</em> performance<ul>
+<li>Two processing units on different NUMA Nomains on same node</li>
+</ul>
+</li>
+<li><em>Inter Node</em> performance<ul>
+<li>Two processing units on same NUMA domain</li>
+</ul>
+</li>
+<li>assumption of model $$t<em>{dart}(m) - t</em>{mpi}(m) = f(m) = c$$ ; m is message
+size</li>
+</ul>
+</li>
+</ul>
+<aside class="notes" data-markdown="">Section V, A: Here we are mainly interested in quantifying overheads with comparative in MPI without dart code. message size and relative location of partners</aside></section></section><section style="top: 0px; display: block;" hidden="" aria-hidden="true" class="stack future"><section data-markdown="" data-markdown-parsed="true" style="top: 263.5px; display: block;"><h2>Figures</h2>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><p><img src="./pgas_files/pgas_fig_1.png" alt="fig1"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 2: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_2.png" alt="fig2"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"></section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 3: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_3.png" alt="fig3"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 4: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_4.png" alt="fig4"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 5: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_5.png" alt="fig5"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 6: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_6.png" alt="fig6"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 7: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_7.png" alt="fig7"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 8: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_8.png" alt="fig8"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 9: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_9.png" alt="fig2"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 10: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_10.png" alt="fig10"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 11: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_11.png" alt="fig11"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 12: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_12.png" alt="fig12"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 13: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_13.png" alt="fig13"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 14: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_14.png" alt="fig14"></p>
+</section><section data-markdown="" data-markdown-parsed="true" class="future" aria-hidden="true" style="top: 330px; display: none;"><h4>Figure 15: Schematic example of DART group creation</h4>
+<p><img src="./pgas_files/pgas_fig_15.png" alt="fig15"></p>
+  <script type="text/javascript" src="./pgas_files/MathJax.js">
+</script></section></section></div>
+        <div class="backgrounds"><div class="slide-background present" data-loaded="true" style="display: block;"></div><div class="slide-background future" data-loaded="true" style="display: block;"></div><div class="slide-background stack future" data-loaded="true" style="display: block;"><div class="slide-background present" data-loaded="true" style="display: block;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div></div><div class="slide-background stack future" style="display: none;"><div class="slide-background present" style="display: none;"></div><div class="slide-background future" style="display: none;"></div></div><div class="slide-background future" data-loaded="true" style="display: block;"></div><div class="slide-background stack future" data-loaded="true" style="display: block;"><div class="slide-background present" data-loaded="true" style="display: block;"></div><div class="slide-background future" data-loaded="true" style="display: block;"></div><div class="slide-background future" style="display: none;"></div></div><div class="slide-background stack future" data-loaded="true" style="display: block;"><div class="slide-background present" data-loaded="true" style="display: block;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div><div class="slide-background future" style="display: none;"></div></div></div><div class="progress" style="display: block;"><span style="width: 0px;"></span></div><aside class="controls" style="display: block;"><div class="navigate-left"></div><div class="navigate-right enabled"></div><div class="navigate-up"></div><div class="navigate-down"></div></aside><div class="slide-number"></div><div class="pause-overlay"></div><div id="aria-status-div" aria-live="polite" aria-atomic="true" style="position: absolute; height: 1px; width: 1px; overflow: hidden; clip: rect(1px 1px 1px 1px);">DART-MPI: PGAS via MPI
+
+Aaron Gonzales
+SSL Reading Group
+2015-03-20
+
+</div></div>
+
+        <script src="./pgas_files/head.min.js"></script>
+        <script src="./pgas_files/reveal.js"></script>
+
+        <script>
+            function extend() {
+              var target = {};
+              for (var i = 0; i < arguments.length; i++) {
+                var source = arguments[i];
+                for (var key in source) {
+                  if (source.hasOwnProperty(key)) {
+                    target[key] = source[key];
+                  }
+                }
+              }
+              return target;
+            }
+
+            // Optional libraries used to extend on reveal.js
+            var deps = [
+              { src: '/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+              { src: '/plugin/markdown/marked.js', condition: function() { return !!document.querySelector('[data-markdown]'); } },
+              { src: '/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector('[data-markdown]'); } },
+              { src: '/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+              { src: '/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+            ];
+
+            // default options to init reveal.js
+            var defaultOptions = {
+              controls: true,
+              progress: true,
+              history: true,
+              center: true,
+              transition: 'default',
+              dependencies: deps
+            };
+
+            // options from URL query string
+            var queryOptions = Reveal.getQueryHash() || {};
+
+            var options = {};
+            options = extend(defaultOptions, options, queryOptions);
+            Reveal.initialize(options);
+        </script><script type="text/javascript" src="./pgas_files/marked.js"></script><script type="text/javascript" src="./pgas_files/markdown.js"></script>
+    
+
+<script type="text/javascript" src="./pgas_files/highlight.js"></script><script type="text/javascript" src="./pgas_files/notes.js"></script></body></html>

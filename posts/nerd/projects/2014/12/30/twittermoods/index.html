@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Can Twitter User's Moods Predict the Stock Market? • a hack of a hacker</title>
+    <meta name="description" content="Perhaps they can.">
+    <meta name="keywords" content="data science, data mining, twitter, finance, prediction, portfolio, projects">
+    
+    
+    	<!-- Twitter Cards -->
+	<meta name="twitter:title" content="Can Twitter User's Moods Predict the Stock Market?">
+	<meta name="twitter:description" content="Perhaps they can.">
+	<meta name="twitter:site" content="@binary_aaron">
+	<meta name="twitter:creator" content="@binary_aaron">
+	
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="http://aarongonzales.net/images/lsi_rolling_means.png">
+	
+	<!-- Open Graph -->
+	<meta property="og:locale" content="">
+	<meta property="og:type" content="article">
+	<meta property="og:title" content="Can Twitter User's Moods Predict the Stock Market?">
+	<meta property="og:description" content="Perhaps they can.">
+	<meta property="og:url" content="http://aarongonzales.net/posts/nerd/projects/2014/12/30/twittermoods/">
+	<meta property="og:site_name" content="a hack of a hacker">
+
+    <link rel="canonical" href="http://aarongonzales.net/posts/nerd/projects/2014/12/30/twittermoods/"> 
+    <link href='https://fonts.googleapis.com/css?family=Crimson+Text' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.019/css/hack.min.css" type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Bitter:400italic' rel='stylesheet' type='text/css'>
+
+
+    <link href="http://aarongonzales.net/atom.xml" type="application/atom+xml" rel="alternate" title="a hack of a hacker Atom Feed">
+    <link href="http://aarongonzales.net/sitemap.xml" type="application/xml" rel="sitemap" title="Sitemap">
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="cleartype" content="on">
+
+    <link rel="stylesheet" href="http://aarongonzales.net/css/main.css">
+    <!-- HTML5 Shiv and Media Query Support for IE -->
+    <!--[if lt IE 9]>
+      <script src="http://aarongonzales.net/js/vendor/html5shiv.min.js"></script>
+      <script src="http://aarongonzales.net/js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body id="js-body">
+    <!--[if lt IE 9]><div class="upgrade notice-warning"><strong>Your browser is quite old!</strong> Why not <a href="http://whatbrowser.org/">upgrade to a newer one</a> to better enjoy this site?</div><![endif]-->
+
+    <header id="masthead">
+
+
+  <div class="inner-wrap">
+    <a href="http://aarongonzales.net/" class="site-title">a hack of a hacker</a>
+    <nav role="navigation" class="menu top-menu">
+        <ul class="menu-item">
+	<li class="home"><a href="/">a hack of a hacker</a></li>
+	
+    
+        
+    
+    <li><a href="http://aarongonzales.net/posts/" >Posts</a></li>
+  
+    
+        
+    
+    <li><a href="http://aarongonzales.net/about/" >About</a></li>
+  
+</ul>
+
+    </nav>
+  </div><!-- /.inner-wrap -->
+</header><!-- /.masthead -->
+
+    <nav role="navigation" id="js-menu" class="sliding-menu-content">
+  <h5>a hack of a hacker <span>Table of Contents</span></h5>
+  <ul class="menu-item">
+    <li>
+      <a href="http://aarongonzales.net/posts/">
+        <img src="http://aarongonzales.net/images/clouds.jpg" alt="teaser" class="teaser">
+        <div class="title">Posts</div>
+        <p class="excerpt">Writing, coursework, reports, and projects</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/about/">
+        <img src="http://aarongonzales.net/images/avatar_long.jpg" alt="teaser" class="teaser">
+        <div class="title">About</div>
+        <p class="excerpt">I'm a regular guy, except when I'm not. Learn more about me here.</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/portfolio/">
+        <img src="http://aarongonzales.net/images/blog/decision_tree_teaser.png" alt="teaser" class="teaser">
+        <div class="title">Portfolio</div>
+        <p class="excerpt">A smattering of my work</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/coursework/">
+        <img src="http://aarongonzales.net/images/ethereal.jpg" alt="teaser" class="teaser">
+        <div class="title">Coursework</div>
+        <p class="excerpt">Stuff from my courses that may be useful to someone</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/research/">
+        <img src="http://aarongonzales.net/images/blog/fb_clusters_teaser.jpg" alt="teaser" class="teaser">
+        <div class="title">Research</div>
+        <p class="excerpt">Research updates and commentary</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/friends/">
+        <img src="http://aarongonzales.net/images/blog/fb_network_long.jpg" alt="teaser" class="teaser">
+        <div class="title">Friends</div>
+        <p class="excerpt">People whom I follow or like</p>
+      </a>
+    </li>
+  </ul>
+</nav>
+<button type="button" id="js-menu-trigger" class="sliding-menu-button lines-button x2" role="button" aria-label="Toggle Navigation">
+  <span class="nav-lines"></span>
+</button>
+
+<div id="js-menu-screen" class="menu-screen"></div>
+
+
+    <div id="page-wrapper">
+      <div id="main" role="main">
+  <article class="wrap" itemscope itemtype="http://schema.org/Article">
+    
+    <div class="page-feature">
+      <div class="page-image">
+        <img src="http://aarongonzales.net/images/lsi_rolling_means.png" class="page-feature-image" alt="Can Twitter User's Moods Predict the Stock Market?" itemprop="image">
+        
+      </div><!-- /.page-image -->
+    </div><!-- /.page-feature -->
+    
+    
+  <nav class="breadcrumbs">
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net" itemprop="url">
+        <span itemprop="title">Home</span>
+      </a> › 
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net/posts/" itemprop="url">
+        <span itemprop="title">Posts</span>
+      </a>
+    </span>
+  </nav><!-- /.breadcrumbs -->
+
+    <div class="page-title">
+      <h1>Can Twitter User's Moods Predict the Stock Market?</h1>
+    </div>
+    <div class="inner-wrap">
+      <nav class="toc"></nav><!-- /.toc -->
+      <div id="content" class="page-content" itemprop="articleBody">
+        <h2 id="tldr">TL;DR</h2>
+<p>The key features of our project were to model the change in Twitter user’s
+   moods as a timeseries allowing us to use a vector autoregression model
+   to infer information about stock prices.</p>
+
+<p>It worked (e.g., user mood had minor predictive power on several stocks) and
+   we will revisit the model after more data is collected.</p>
+
+<h1 id="background">Background</h1>
+<p>My friend and collaborator Adam Delora and I took a course in data mining last
+   semester, taught by <a href="http://cs.unm.edu/~mueen/">Abdullah Mueen, PhD</a>. 
+   As is typical with advanced courses,
+   we had a semester project of considerable scale. Adam, being rather into
+   finance (he has a background in economics), wanted to play with stock market
+   data, and I, being rather into social network semantics, wanted to do
+   something with data from a network. We decided to combine our powers to
+   model information about network user’s moods to attempt predicting several
+   stocks and then expand the project if we found something interesting.</p>
+
+<p>We narrowed our choices down to Twitter as a market due to its ease of
+   access. Twitter has build a robust, easy to use API that many academic
+   groups have used for research and I hope that our dataset will be useful for
+   other projects as well. Twitter has roughly 284 million monthly active users
+   and sees about 500 million tweets per day, allowing researchers a vast
+   amount of text, network, and geolocation data with which they may play.</p>
+
+<p>At a high level, we used latent
+   semantic indexing to get a set of topics for a given hour over a month’s
+   worth of tweets and assigned a continuous semantic “score” for each hour
+   using the AFINN database. This allowed us to use a vector autoregressive
+   model to investigate the relationship between user mood and stock price.
+   The <a href="http://arxiv.org/abs/1103.2903">AFINN</a> database assigns coded valence values to common words to allow
+   quantification of a set of word’s “mood” and LSI allows us to reduce the
+   space of each set of tweets, roughly 200,000 per hour, to reduce the noise
+   and other issues with AFINN.</p>
+
+<h1 id="methods">Methods</h1>
+
+<h3 id="stock-collection-and-preprocessing">Stock collection and preprocessing</h3>
+<p>NASDAQ market data was collected over a slightly longer period,
+       2014-08-30 – 2014-11-09. We tracked the following stocks:</p>
+
+<ul>
+  <li>Apple (aapl)</li>
+  <li>Amazon (amzn)</li>
+  <li>Facebook (fb)</li>
+  <li>Google (goog)</li>
+  <li>Microsoft (msft)</li>
+  <li>Twitter (twtr)</li>
+</ul>
+
+<p>Stock data were analyzed using their hourly closing price.</p>
+
+<h3 id="tweet-collection-and-preprocessing">Tweet collection and preprocessing</h3>
+
+<p>We collected tweets using the public Twitter Streaming RESTful API between
+2014-10-17 and 2014-11-09 by tracking words that related to various tech
+stocks indexed by NASDAQ. Tweets were stored in a Mongo database.</p>
+
+<p>Tweet text was preprocessed to remove
+common stopwords and punctuation. Tweets were processed in a one-hour bin 
+and each bin was represented as bag-of-words.</p>
+
+<p>Latent semantic indexing was performed on the
+one-hour bins of tweets, giving a total of 218 hours included in
+analysis.</p>
+
+<p>Each hour’s LSI topics were scored using the AFINN database,
+resulting in a single number indicating semantic valence for each hour.
+The LSI score was smoothed using rolling means and assessed for
+periodicity.</p>
+
+<h3 id="analysis">Analysis</h3>
+<p>Semantic data was combined with the stock data and
+standardized (z-score) for visualization and analysis. A
+model was created using <a href="http://en.wikipedia.org/wiki/Vector_autoregression">vector autoregression</a> (VAR) to assess the
+predictive power of the semantic data against the stock data.</p>
+
+<p>As an additional visualization, word clouds were generated for each hour bin
+using <a href="https://github.com/amueller/word_cloud">Andreas Muller’s word_cloud package</a>.</p>
+
+<h3 id="tools">Tools</h3>
+<p>All work was done using Python: Tweets were harvested using 
+<a href="https://github.com/tweepy/tweepy">Tweepy</a>, text
+preprocessing was performed using 
+<a href="https://radimrehurek.com/gensim/">Gensim</a>, statistical
+analysis was performed with 
+<a href="http://statsmodels.sourceforge.net/">Statsmodels</a>,
+and plots were made using <a href="http://matplotlib.org/">Matplotlib</a> &amp;
+<a href="http://stanford.edu/~mwaskom/software/seaborn/">Seaborn</a>.</p>
+
+<h2 id="results">Results</h2>
+
+<p>Within an hour bin, LSI would provide a set of topics as noted below</p>
+
+<hr />
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">scientists</th>
+      <th style="text-align: center">are</th>
+      <th style="text-align: center">about</th>
+      <th style="text-align: center">do</th>
+      <th style="text-align: center">don’t</th>
+      <th style="text-align: center">over</th>
+      <th style="text-align: center">say</th>
+      <th style="text-align: center">climate</th>
+      <th style="text-align: center">it</th>
+      <th style="text-align: center">panic</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">0.416</td>
+      <td style="text-align: center">0.219</td>
+      <td style="text-align: center">0.217</td>
+      <td style="text-align: center">0.216</td>
+      <td style="text-align: center">0.214</td>
+      <td style="text-align: center">0.211</td>
+      <td style="text-align: center">0.209</td>
+      <td style="text-align: center">0.209</td>
+      <td style="text-align: center">0.209</td>
+      <td style="text-align: center">0.208</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">on</th>
+      <th style="text-align: center">is</th>
+      <th style="text-align: center">get</th>
+      <th style="text-align: center">from</th>
+      <th style="text-align: center">ebola</th>
+      <th style="text-align: center">i</th>
+      <th style="text-align: center">google</th>
+      <th style="text-align: center">it</th>
+      <th style="text-align: center">really</th>
+      <th style="text-align: center">liked</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">0.586</td>
+      <td style="text-align: center">-0.315</td>
+      <td style="text-align: center">-0.217</td>
+      <td style="text-align: center">0.165</td>
+      <td style="text-align: center">-0.140</td>
+      <td style="text-align: center">-0.129</td>
+      <td style="text-align: center">-0.126</td>
+      <td style="text-align: center">-0.122</td>
+      <td style="text-align: center">-0.117</td>
+      <td style="text-align: center">0.208</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<p>Word clouds, while simple, are a nice way to explore how the topics changed per
+hour. I generated clouds using the great
+<a href="https://github.com/amueller/word_cloud">word_cloud</a> package.</p>
+
+<p>Word clouds generated from topics on 2014-10-30,
+11:00-12:00 and 12:00 - 13:00 are shown below. The LSI model was able to capture
+information about Tim Cook (Apple’s CEO) coming out as gay on that
+day.</p>
+
+<p><span><img src="/figure/img170.png" alt="w" title="Tim Cook coming out" /></span></p>
+
+<p><span> <img src="/figure/img173.png" alt="" title="Tim Cook coming out" /></span></p>
+
+<p>The following plot shows the rolling means of the standardized LSI score and
+stock prices.</p>
+
+<p><span><img src="/figure/stock_plot_with_lsi.png" alt="" title="Rolling means of standardized LSI score and closing stock prices per hour" /></span></p>
+
+<p>VAR models describe a set of <script type="math/tex">k</script> variables as
+a linear function of their previous values. A <script type="math/tex">p</script>-th order var model is
+denoted by</p>
+
+<script type="math/tex; mode=display">\begin{align*}
+y_t = c + A_1 y_{t-1} + A_2 y_{t-2} + \cdots + A_p y_{t-p} + e_t
+\end{align*}</script>
+
+<p>VAR models are often used with a lag parameter that operates on the
+elements of a time series to produce the previous element. We determined
+the lag order by employing an information criteria-based order selection
+which led us to use a lag of 1 hour in the model.</p>
+
+<p>Impulse response analysis and a Granger’s causality test were performed
+on the fitted VAR model. A causal effect of LSI score was found at the
+90% level for the following variables in the model.</p>
+
+<ul>
+  <li>
+    <p>Amazon stock price <script type="math/tex">f=9.68, p=0.02</script></p>
+  </li>
+  <li>
+    <p>Google stock price <script type="math/tex">f=8.584039, p=0.003</script></p>
+  </li>
+  <li>
+    <p>tweets per hour <script type="math/tex">f=3.51, p=0.06</script></p>
+  </li>
+</ul>
+
+<p>The impulse responses are plotted below:
+<img src="/figure/impulse_responses.png" alt="Impulse Response analysis of LSI score
+change" title="Impulse Responses" /></p>
+
+<h2 id="summary">Summary</h2>
+<p>It is difficult to infer exactly why the semantic scores predicted some
+of these stocks, though there does seem to be a heavy overrepresentation
+of tweets that follow a form of “I liked a photo from Facebook” or “I
+liked a video on Youtube”, which are automated tweets that some users
+have enabled in their accounts. Volume of these tweets may be a proxy
+for these service’s usage rates, which could predict minor fluctuations
+in stock prices. It is useful to note that the fluctuations in prices
+are minor, 1-2% of total prices, but may not be so minor to investors.
+We will revisit this dataset after collection of broader data is
+complete in several months and will investigate other drawbacks of using
+the AFINN database and more effective filtering of the tweets.</p>
+
+
+        <hr />
+        <footer class="page-footer">
+          
+
+
+<div class="author-image">
+	<img src="http://aarongonzales.net/images/avatar.jpg" alt="Aaron Gonzales">
+</div><!-- ./author-image -->
+<div class="author-content">
+	<h3 class="author-name" >Written by <span itemprop="author">Aaron Gonzales</span></h3>
+	<p class="author-bio">I'm a typically atypical guy.</p>
+</div><!-- ./author-content -->
+          <div class="inline-btn">
+	<a class="btn-social twitter" href="https://twitter.com/intent/tweet?text=Can%20Twitter%20User&#39;s%20Moods%20Predict%20the%20Stock%20Market?&amp;url=http://aarongonzales.net/posts/nerd/projects/2014/12/30/twittermoods/&amp;via=binary_aaron" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter</a>
+	<a class="btn-social facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://aarongonzales.net/posts/nerd/projects/2014/12/30/twittermoods/" target="_blank"><i class="fa fa-facebook" aria-hidden="true"></i> Share on Facebook</a>
+	<a class="btn-social google-plus"  href="https://plus.google.com/share?url=http://aarongonzales.net/posts/nerd/projects/2014/12/30/twittermoods/" target="_blank"><i class="fa fa-google-plus" aria-hidden="true"></i> Share on Google+</a>
+</div><!-- /.share-this -->
+          <div class="page-meta">
+	<p>Updated <time datetime="2014-12-30T00:00:00Z" itemprop="datePublished">December 30, 2014</time></p>
+</div><!-- /.page-meta -->
+        </footer><!-- /.footer -->
+        <aside>
+          
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'hackofahacker'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+        </aside>
+      </div><!-- /.content -->
+    </div><!-- /.inner-wrap -->
+    
+  </article><!-- ./wrap -->
+</div><!-- /#main -->
+
+      <footer role="contentinfo" id="site-footer">
+	<nav role="navigation" class="menu bottom-menu">
+		<ul class="menu-item">
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/" >Home</a></li>
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/contact" >Contact</a></li>
+		
+		</ul>
+	</nav><!-- /.bottom-menu -->
+	<p class="copyright">&#169; 2017 <a href="http://aarongonzales.net">a hack of a hacker</a> powered by <a href="http://jekyllrb.com" rel="nofollow">Jekyll</a> + <a href="http://mmistakes.github.io/skinny-bones-jekyll/" rel="nofollow">Skinny Bones</a>.</p>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-11008365-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</footer>
+
+    </div>
+
+    <script src="http://aarongonzales.net/js/vendor/jquery-1.9.1.min.js"></script>
+    <script src="http://aarongonzales.net/js/main.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+    <link rel="stylesheet" href="/css/styles/custom.css">
+    <script src="/css/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+
+</html>

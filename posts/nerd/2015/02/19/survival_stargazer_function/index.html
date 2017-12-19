@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Summary tables for R survival objects with stargazer or xtable • a hack of a hacker</title>
+    <meta name="description" content="Making R survival objects play well with tables">
+    <meta name="keywords" content="r, statistics, open source, stargazer, survival, survfit, xtable, summary">
+    
+    
+    	<!-- Twitter Cards -->
+	<meta name="twitter:title" content="Summary tables for R survival objects with stargazer or xtable">
+	<meta name="twitter:description" content="Making R survival objects play well with tables">
+	<meta name="twitter:site" content="@binary_aaron">
+	<meta name="twitter:creator" content="@binary_aaron">
+	
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:image" content="http://aarongonzales.net/images/gggraph_crop.jpeg">
+	
+	<!-- Open Graph -->
+	<meta property="og:locale" content="">
+	<meta property="og:type" content="article">
+	<meta property="og:title" content="Summary tables for R survival objects with stargazer or xtable">
+	<meta property="og:description" content="Making R survival objects play well with tables">
+	<meta property="og:url" content="http://aarongonzales.net/posts/nerd/2015/02/19/survival_stargazer_function/">
+	<meta property="og:site_name" content="a hack of a hacker">
+
+    <link rel="canonical" href="http://aarongonzales.net/posts/nerd/2015/02/19/survival_stargazer_function/"> 
+    <link href='https://fonts.googleapis.com/css?family=Crimson+Text' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.019/css/hack.min.css" type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Bitter:400italic' rel='stylesheet' type='text/css'>
+
+
+    <link href="http://aarongonzales.net/atom.xml" type="application/atom+xml" rel="alternate" title="a hack of a hacker Atom Feed">
+    <link href="http://aarongonzales.net/sitemap.xml" type="application/xml" rel="sitemap" title="Sitemap">
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="cleartype" content="on">
+
+    <link rel="stylesheet" href="http://aarongonzales.net/css/main.css">
+    <!-- HTML5 Shiv and Media Query Support for IE -->
+    <!--[if lt IE 9]>
+      <script src="http://aarongonzales.net/js/vendor/html5shiv.min.js"></script>
+      <script src="http://aarongonzales.net/js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body id="js-body">
+    <!--[if lt IE 9]><div class="upgrade notice-warning"><strong>Your browser is quite old!</strong> Why not <a href="http://whatbrowser.org/">upgrade to a newer one</a> to better enjoy this site?</div><![endif]-->
+
+    <header id="masthead">
+
+
+  <div class="inner-wrap">
+    <a href="http://aarongonzales.net/" class="site-title">a hack of a hacker</a>
+    <nav role="navigation" class="menu top-menu">
+        <ul class="menu-item">
+	<li class="home"><a href="/">a hack of a hacker</a></li>
+	
+    
+        
+    
+    <li><a href="http://aarongonzales.net/posts/" >Posts</a></li>
+  
+    
+        
+    
+    <li><a href="http://aarongonzales.net/about/" >About</a></li>
+  
+</ul>
+
+    </nav>
+  </div><!-- /.inner-wrap -->
+</header><!-- /.masthead -->
+
+    <nav role="navigation" id="js-menu" class="sliding-menu-content">
+  <h5>a hack of a hacker <span>Table of Contents</span></h5>
+  <ul class="menu-item">
+    <li>
+      <a href="http://aarongonzales.net/posts/">
+        <img src="http://aarongonzales.net/images/clouds.jpg" alt="teaser" class="teaser">
+        <div class="title">Posts</div>
+        <p class="excerpt">Writing, coursework, reports, and projects</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/about/">
+        <img src="http://aarongonzales.net/images/avatar_long.jpg" alt="teaser" class="teaser">
+        <div class="title">About</div>
+        <p class="excerpt">I'm a regular guy, except when I'm not. Learn more about me here.</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/portfolio/">
+        <img src="http://aarongonzales.net/images/blog/decision_tree_teaser.png" alt="teaser" class="teaser">
+        <div class="title">Portfolio</div>
+        <p class="excerpt">A smattering of my work</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/coursework/">
+        <img src="http://aarongonzales.net/images/ethereal.jpg" alt="teaser" class="teaser">
+        <div class="title">Coursework</div>
+        <p class="excerpt">Stuff from my courses that may be useful to someone</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/research/">
+        <img src="http://aarongonzales.net/images/blog/fb_clusters_teaser.jpg" alt="teaser" class="teaser">
+        <div class="title">Research</div>
+        <p class="excerpt">Research updates and commentary</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/friends/">
+        <img src="http://aarongonzales.net/images/blog/fb_network_long.jpg" alt="teaser" class="teaser">
+        <div class="title">Friends</div>
+        <p class="excerpt">People whom I follow or like</p>
+      </a>
+    </li>
+  </ul>
+</nav>
+<button type="button" id="js-menu-trigger" class="sliding-menu-button lines-button x2" role="button" aria-label="Toggle Navigation">
+  <span class="nav-lines"></span>
+</button>
+
+<div id="js-menu-screen" class="menu-screen"></div>
+
+
+    <div id="page-wrapper">
+      <div id="main" role="main">
+  <article class="wrap" itemscope itemtype="http://schema.org/Article">
+    
+    
+  <nav class="breadcrumbs">
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net" itemprop="url">
+        <span itemprop="title">Home</span>
+      </a> › 
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net/posts/" itemprop="url">
+        <span itemprop="title">Posts</span>
+      </a>
+    </span>
+  </nav><!-- /.breadcrumbs -->
+
+    <div class="page-title">
+      <h1>Summary tables for R survival objects with stargazer or xtable</h1>
+    </div>
+    <div class="inner-wrap">
+      <nav class="toc"></nav><!-- /.toc -->
+      <div id="content" class="page-content" itemprop="articleBody">
+        <p>Last year, I was hired to do some statistical analysis for a group of surgeons. As research tends to go, our initial paper submission was rejected and several revisions were suggested. A particularly annoying problem came up, which was how to create nice tables from survival objects - summaries, not regression tables. The survival package overloads <code>summary()</code> rendering xtable and stargazer unable to build a beautiful table from the custom summary function.</p>
+<p>I can illustrate the effect here using data from <a href="http://www.ats.ucla.edu/stat/r/examples/asa/asa_ch2_r.htm">IDRE</a>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(survival)
+hmohiv&lt;-<span class="kw">read.table</span>(
+   <span class="st">&quot;http://www.ats.ucla.edu/stat/r/examples/asa/hmohiv.csv&quot;</span>, 
+   <span class="dt">sep=</span><span class="st">&quot;,&quot;</span>,
+   <span class="dt">header =</span> <span class="ot">TRUE</span>)
+<span class="kw">attach</span>(hmohiv)
+hmo.surv &lt;-<span class="st"> </span><span class="kw">survfit</span>(<span class="kw">Surv</span>(time, censor)~<span class="st"> </span><span class="dv">1</span>)</code></pre>
+<p>Calling <code>summary</code> on the survival fit will print out a good deal of information for each time point recorded in your data.</p>
+<pre class="sourceCode r"><code class="sourceCode r">normsum &lt;-<span class="st"> </span><span class="kw">summary</span>(hmo.surv)
+<span class="kw">print</span>(normsum)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## Call: survfit(formula = Surv(time, censor) ~ 1)
+## 
+##  time n.risk n.event survival std.err lower 95% CI upper 95% CI
+##     1    100      15   0.8500  0.0357       0.7828        0.923
+##     2     83       5   0.7988  0.0402       0.7237        0.882
+##     3     73      10   0.6894  0.0473       0.6026        0.789
+##     4     61       4   0.6442  0.0493       0.5544        0.748
+##     5     56       7   0.5636  0.0517       0.4709        0.675
+##     6     49       2   0.5406  0.0521       0.4476        0.653
+##     7     46       6   0.4701  0.0526       0.3775        0.586
+##     8     39       4   0.4219  0.0525       0.3306        0.538
+##     9     35       3   0.3857  0.0520       0.2962        0.502
+##    10     32       3   0.3496  0.0511       0.2625        0.466
+##    11     28       3   0.3121  0.0500       0.2280        0.427
+##    12     25       2   0.2872  0.0490       0.2055        0.401
+##    13     21       1   0.2735  0.0486       0.1931        0.387
+##    14     20       1   0.2598  0.0480       0.1809        0.373
+##    15     19       2   0.2325  0.0467       0.1568        0.345
+##    22     16       1   0.2179  0.0460       0.1441        0.330
+##    30     14       1   0.2024  0.0453       0.1305        0.314
+##    31     13       1   0.1868  0.0444       0.1173        0.298
+##    32     12       1   0.1712  0.0433       0.1043        0.281
+##    34     11       1   0.1557  0.0421       0.0916        0.264
+##    35     10       1   0.1401  0.0407       0.0793        0.247
+##    36      9       1   0.1245  0.0390       0.0674        0.230
+##    43      8       1   0.1090  0.0371       0.0559        0.212
+##    53      7       1   0.0934  0.0349       0.0449        0.194
+##    54      6       1   0.0778  0.0324       0.0344        0.176
+##    57      4       1   0.0584  0.0296       0.0216        0.157
+##    58      3       1   0.0389  0.0253       0.0109        0.139</code></pre>
+<p>The survival summary takes additional options, namely a vector specifying the times at which you want to summarize your set.</p>
+<pre class="sourceCode r"><code class="sourceCode r">survsum &lt;-<span class="st"> </span><span class="kw">summary</span>(hmo.surv, <span class="dt">times =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">10</span>,<span class="dv">25</span>,<span class="dv">58</span>))
+<span class="kw">print</span>(survsum)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## Call: survfit(formula = Surv(time, censor) ~ 1)
+## 
+##  time n.risk n.event survival std.err lower 95% CI upper 95% CI
+##     1    100      15   0.8500  0.0357       0.7828        0.923
+##    10     32      44   0.3496  0.0511       0.2625        0.466
+##    25     14      10   0.2179  0.0460       0.1441        0.330
+##    58      3      11   0.0389  0.0253       0.0109        0.139</code></pre>
+<p>Stargazer doesn’t like it (and neither does xtable - it won’t even let me compile the Rmd document).</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stargazer</span>(survsum)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">## 
+## % Error: Unrecognized object type.</code></pre>
+<p>So, I made a convenience function that turns your <code>survfit</code> object into a data frame that can be passed to a table generator. Feel free to modify it to create the columns that you need.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co">#&#39; Create a nice data frame from a survival model for automatically generating a table. </span>
+<span class="co">#&#39;</span>
+<span class="co">#&#39; @param survobj \code{\link[survival]{survfit}} object</span>
+<span class="co">#&#39; @param timevec a vector of times for survival summary</span>
+<span class="co">#&#39; @param scale a number that scales the timevec, e.g., if your data is recorded in days and you want months displayed, use scale = 30</span>
+<span class="co">#&#39; @return a data frame with labeled columns </span>
+<span class="co">#&#39; @author Aaron Gonzales</span>
+<span class="co">#&#39; \url{http://binaryaaron.github.io/}</span>
+<span class="co">#&#39; @export</span>
+
+make_surv_table &lt;-<span class="st"> </span>function(survobj, 
+                            timevec,
+                            <span class="dt">scale =</span> <span class="dv">1</span>,
+                            <span class="dt">col_names =</span> <span class="ot">NULL</span>
+                            ){
+   <span class="co"># vector of times for summary points, defaults to six month intervals</span>
+   if(<span class="kw">is.null</span>(timevec)){
+      <span class="kw">print</span>(<span class="st">&#39;timevec invalid; defaulting to six-month intervals by days&#39;</span>)
+      timevec &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">180</span>, <span class="dv">360</span>, <span class="dv">540</span>, <span class="dv">720</span>)
+   }
+   <span class="co"># here, scale converts the numbers into months</span>
+   survsum &lt;-<span class="st"> </span><span class="kw">summary</span>(survobj, timevec, scale)
+   <span class="co"># make a data frame out of the summary object</span>
+   df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(survsum$time, 
+              survsum$surv, 
+              <span class="dv">1</span> -<span class="st"> </span>survsum$surv, 
+              survsum$std.err, 
+              <span class="kw">cumsum</span>(survsum$n.event),
+              survsum$n.risk 
+              )
+   <span class="co"># give that data frame names</span>
+   if(<span class="kw">is.null</span>(col_names)){
+      <span class="kw">colnames</span>(df) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;Time&#39;</span>,
+                        <span class="st">&#39;Survival&#39;</span>,
+                        <span class="st">&#39;Deaths&#39;</span>,
+                        <span class="st">&#39;Survival SE&#39;</span>, 
+                        <span class="st">&#39;Cummulative Events&#39;</span>,
+                        <span class="st">&#39;Number remaining&#39;</span>)
+   } else{
+      <span class="kw">colnames</span>(df) &lt;-<span class="st"> </span>col_names
+   }
+   <span class="co"># return the frame</span>
+   <span class="kw">return</span>(df)
+}</code></pre>
+<p>And here it is in action:</p>
+<pre class="sourceCode r"><code class="sourceCode r">summary_days &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">25</span>, <span class="dv">58</span>)
+
+<span class="kw">stargazer</span>(<span class="kw">make_surv_table</span>(hmo.surv, summary_days), 
+         <span class="dt">summary =</span> <span class="ot">FALSE</span>,
+         <span class="dt">type =</span> <span class="kw">c</span>(<span class="st">&#39;html&#39;</span>),
+         <span class="dt">title =</span> <span class="st">&#39;Summary of HMOHIV survival fit&#39;</span>,
+         <span class="dt">rownames =</span> <span class="ot">FALSE</span>)</code></pre>
+<table style="text-align:center">
+<caption>
+<strong>Summary of HMOHIV survival fit</strong>
+</caption>
+<tr>
+<td colspan="6" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Time
+</td>
+<td>
+Survival
+</td>
+<td>
+Deaths
+</td>
+<td>
+Survival SE
+</td>
+<td>
+Cummulative Events
+</td>
+<td>
+Number remaining
+</td>
+</tr>
+<tr>
+<td colspan="6" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+0
+</td>
+<td>
+1
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+0
+</td>
+<td>
+100
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+10
+</td>
+<td>
+0.350
+</td>
+<td>
+0.650
+</td>
+<td>
+0.051
+</td>
+<td>
+59
+</td>
+<td>
+32
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+25
+</td>
+<td>
+0.218
+</td>
+<td>
+0.782
+</td>
+<td>
+0.046
+</td>
+<td>
+69
+</td>
+<td>
+14
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+58
+</td>
+<td>
+0.039
+</td>
+<td>
+0.961
+</td>
+<td>
+0.025
+</td>
+<td>
+80
+</td>
+<td>
+3
+</td>
+</tr>
+<tr>
+<td colspan="6" style="border-bottom: 1px solid black">
+</td>
+</tr>
+</table>
+<p>The HTML format leaves a hair to be desired, but they look great in latex. Obviously, change the <code>type = 'html'</code> to <code>latex</code> or <code>text</code> as needed.</p>
+<p>Hopefully someone else can make use of this as well.</p>
+
+        <hr />
+        <footer class="page-footer">
+          
+
+
+<div class="author-image">
+	<img src="http://aarongonzales.net/images/avatar.jpg" alt="Aaron Gonzales">
+</div><!-- ./author-image -->
+<div class="author-content">
+	<h3 class="author-name" >Written by <span itemprop="author">Aaron Gonzales</span></h3>
+	<p class="author-bio">I'm a typically atypical guy.</p>
+</div><!-- ./author-content -->
+          <div class="inline-btn">
+	<a class="btn-social twitter" href="https://twitter.com/intent/tweet?text=Summary%20tables%20for%20R%20survival%20objects%20with%20stargazer%20or%20xtable&amp;url=http://aarongonzales.net/posts/nerd/2015/02/19/survival_stargazer_function/&amp;via=binary_aaron" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter</a>
+	<a class="btn-social facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://aarongonzales.net/posts/nerd/2015/02/19/survival_stargazer_function/" target="_blank"><i class="fa fa-facebook" aria-hidden="true"></i> Share on Facebook</a>
+	<a class="btn-social google-plus"  href="https://plus.google.com/share?url=http://aarongonzales.net/posts/nerd/2015/02/19/survival_stargazer_function/" target="_blank"><i class="fa fa-google-plus" aria-hidden="true"></i> Share on Google+</a>
+</div><!-- /.share-this -->
+          <div class="page-meta">
+	<p>Updated <time datetime="2015-02-19T00:00:00Z" itemprop="datePublished">February 19, 2015</time></p>
+</div><!-- /.page-meta -->
+        </footer><!-- /.footer -->
+        <aside>
+          
+        </aside>
+      </div><!-- /.content -->
+    </div><!-- /.inner-wrap -->
+    
+  </article><!-- ./wrap -->
+</div><!-- /#main -->
+
+      <footer role="contentinfo" id="site-footer">
+	<nav role="navigation" class="menu bottom-menu">
+		<ul class="menu-item">
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/" >Home</a></li>
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/contact" >Contact</a></li>
+		
+		</ul>
+	</nav><!-- /.bottom-menu -->
+	<p class="copyright">&#169; 2017 <a href="http://aarongonzales.net">a hack of a hacker</a> powered by <a href="http://jekyllrb.com" rel="nofollow">Jekyll</a> + <a href="http://mmistakes.github.io/skinny-bones-jekyll/" rel="nofollow">Skinny Bones</a>.</p>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-11008365-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</footer>
+
+    </div>
+
+    <script src="http://aarongonzales.net/js/vendor/jquery-1.9.1.min.js"></script>
+    <script src="http://aarongonzales.net/js/main.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+    <link rel="stylesheet" href="/css/styles/custom.css">
+    <script src="/css/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+
+</html>

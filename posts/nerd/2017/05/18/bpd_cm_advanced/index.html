@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Visualizing incident report patterns from the Boston Police Department • a hack of a hacker</title>
+    
+    <meta name="keywords" content="data mining, data science, open data, boston, bpd, gis, holoviews, geoviews, bokeh">
+    
+    
+    	<!-- Twitter Cards -->
+	<meta name="twitter:title" content="Visualizing incident report patterns from the Boston Police Department">
+	
+	<meta name="twitter:site" content="@binary_aaron">
+	<meta name="twitter:creator" content="@binary_aaron">
+	
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:image" content="http://aarongonzales.net/images/gggraph_crop.jpeg">
+	
+	<!-- Open Graph -->
+	<meta property="og:locale" content="">
+	<meta property="og:type" content="article">
+	<meta property="og:title" content="Visualizing incident report patterns from the Boston Police Department">
+	
+	<meta property="og:url" content="http://aarongonzales.net/posts/nerd/2017/05/18/bpd_cm_advanced/">
+	<meta property="og:site_name" content="a hack of a hacker">
+
+    <link rel="canonical" href="http://aarongonzales.net/posts/nerd/2017/05/18/bpd_cm_advanced/"> 
+    <link href='https://fonts.googleapis.com/css?family=Crimson+Text' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.019/css/hack.min.css" type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Bitter:400italic' rel='stylesheet' type='text/css'>
+
+
+    <link href="http://aarongonzales.net/atom.xml" type="application/atom+xml" rel="alternate" title="a hack of a hacker Atom Feed">
+    <link href="http://aarongonzales.net/sitemap.xml" type="application/xml" rel="sitemap" title="Sitemap">
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="cleartype" content="on">
+
+    <link rel="stylesheet" href="http://aarongonzales.net/css/main.css">
+    <!-- HTML5 Shiv and Media Query Support for IE -->
+    <!--[if lt IE 9]>
+      <script src="http://aarongonzales.net/js/vendor/html5shiv.min.js"></script>
+      <script src="http://aarongonzales.net/js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body id="js-body">
+    <!--[if lt IE 9]><div class="upgrade notice-warning"><strong>Your browser is quite old!</strong> Why not <a href="http://whatbrowser.org/">upgrade to a newer one</a> to better enjoy this site?</div><![endif]-->
+
+    <header id="masthead">
+
+
+  <div class="inner-wrap">
+    <a href="http://aarongonzales.net/" class="site-title">a hack of a hacker</a>
+    <nav role="navigation" class="menu top-menu">
+        <ul class="menu-item">
+	<li class="home"><a href="/">a hack of a hacker</a></li>
+	
+    
+        
+    
+    <li><a href="http://aarongonzales.net/posts/" >Posts</a></li>
+  
+    
+        
+    
+    <li><a href="http://aarongonzales.net/about/" >About</a></li>
+  
+</ul>
+
+    </nav>
+  </div><!-- /.inner-wrap -->
+</header><!-- /.masthead -->
+
+    <nav role="navigation" id="js-menu" class="sliding-menu-content">
+  <h5>a hack of a hacker <span>Table of Contents</span></h5>
+  <ul class="menu-item">
+    <li>
+      <a href="http://aarongonzales.net/posts/">
+        <img src="http://aarongonzales.net/images/clouds.jpg" alt="teaser" class="teaser">
+        <div class="title">Posts</div>
+        <p class="excerpt">Writing, coursework, reports, and projects</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/about/">
+        <img src="http://aarongonzales.net/images/avatar_long.jpg" alt="teaser" class="teaser">
+        <div class="title">About</div>
+        <p class="excerpt">I'm a regular guy, except when I'm not. Learn more about me here.</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/portfolio/">
+        <img src="http://aarongonzales.net/images/blog/decision_tree_teaser.png" alt="teaser" class="teaser">
+        <div class="title">Portfolio</div>
+        <p class="excerpt">A smattering of my work</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/coursework/">
+        <img src="http://aarongonzales.net/images/ethereal.jpg" alt="teaser" class="teaser">
+        <div class="title">Coursework</div>
+        <p class="excerpt">Stuff from my courses that may be useful to someone</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/research/">
+        <img src="http://aarongonzales.net/images/blog/fb_clusters_teaser.jpg" alt="teaser" class="teaser">
+        <div class="title">Research</div>
+        <p class="excerpt">Research updates and commentary</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/friends/">
+        <img src="http://aarongonzales.net/images/blog/fb_network_long.jpg" alt="teaser" class="teaser">
+        <div class="title">Friends</div>
+        <p class="excerpt">People whom I follow or like</p>
+      </a>
+    </li>
+  </ul>
+</nav>
+<button type="button" id="js-menu-trigger" class="sliding-menu-button lines-button x2" role="button" aria-label="Toggle Navigation">
+  <span class="nav-lines"></span>
+</button>
+
+<div id="js-menu-screen" class="menu-screen"></div>
+
+
+    <div id="page-wrapper">
+      <div id="main" role="main">
+  <article class="wrap" itemscope itemtype="http://schema.org/Article">
+    
+    
+  <nav class="breadcrumbs">
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net" itemprop="url">
+        <span itemprop="title">Home</span>
+      </a> › 
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net/posts/" itemprop="url">
+        <span itemprop="title">Posts</span>
+      </a>
+    </span>
+  </nav><!-- /.breadcrumbs -->
+
+    <div class="page-title">
+      <h1>Visualizing incident report patterns from the Boston Police Department</h1>
+    </div>
+    <div class="inner-wrap">
+      <nav class="toc"></nav><!-- /.toc -->
+      <div id="content" class="page-content" itemprop="articleBody">
+        <div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Recently, I wrote a post about mapping incidents from the Boston Police Department. While the resultant choropleth wasn't a bad start, it does leave a bit left to be desired, and I didn't spend much time looking at the rest of the dataset.</p>
+<p>I recall seeing <a href="http://datashader.readthedocs.io/en/latest/">Datashader</a> before and thought this might be a nice opportunity to use it. The process of working through examples led me to see both <a href="https://www.continuum.io/blog/developer-blog/introducing-geoviews">Geoviews</a> and <a href="http://holoviews.org/index.html">Holoviews</a>, which led me down a bit of a GIS / visualization rabbit hole...  Which leads me here.</p>
+<h2 id="needless-commentary-about-plotting-in-python">needless commentary about
+  plotting in python<a class="anchor-link"
+    href="#needless-commentary-about-plotting-in-python">&#182;</a></h2><p>The
+Python data ecosystem (python, numpy, scipy, pandas, etc.) is rich and wonderful, though historically visualizations have been a pain point. There is no shortage of posts covering comparisons between R/Ggplot2 and python's varying visualization frameworks (matplotlib, seaborn, pandas built-ins, plotly, yhat's ggplot, altair, pygal, folium, bokeh). (My favorite post is this <a href="https://dsaber.com/2016/10/02/a-dramatic-tour-through-pythons-data-visualization-landscape-including-ggplot-and-altair/">dramatic tour</a>.)</p>
+<p>As a data scientist who regularly works on implementing projects into production, I appreciate the flexibility that lower-level frameworks (or frameworks that expose lower-level primitives ) give in allowing custom code.</p>
+<p>This is seldom the case with visualizations for in-notebook dataset exploration. I cannot stand plotting things in raw matplotlib and would love to have a robust declarative library that gives me access to lower-level plot objects for customization when you need it, with a nice functional syntax. <a href="https://altair-viz.github.io/index.html">Altair</a> is probably the most promising of the bunch for rapid ease of use and semantics, but it's difficult to work with in-notebook plots without futzing around with giant notebook sizes (Altair embeds all plot data as JSON in the page and uses Vega to render it.) Bokeh is great for interactivity and I think as the Chart API smooths out a bit it will really start to shine even more.</p>
+<p>Anyway, it was fun to learn a bit about holoviews and I will keep it in mind for certain types of data when needed. I like the API and ease of combining plot types, as we'll see later.</p>
+<h2 id="moving-on">moving on<a class="anchor-link" href="#moving-on">&#182;</a></h2><p>As before, I'm using the  <a href="https://data.boston.gov/">Analyze Boston</a> portal to get geo-coded incidents via the <a href="https://data.boston.gov/dataset/crime-incident-reports-august-2015-to-date-source-new-system">current incident reporting</a> page.</p>
+<p>Let's set up our notebook environment:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="kn">from</span> <span class="nn">IPython.core.interactiveshell</span> <span class="k">import</span> <span class="n">InteractiveShell</span> <span class="c1"># makes all cells allow multiple outputs</span>
+<span class="kn">from</span> <span class="nn">IPython.core.display</span> <span class="k">import</span> <span class="n">HTML</span><span class="p">,</span> <span class="n">display</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">IFrame</span>
+<span class="n">InteractiveShell</span><span class="o">.</span><span class="n">ast_node_interactivity</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;bmh&#39;</span><span class="p">)</span> <span class="c1"># prettier plots</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">float_format</span> <span class="o">=</span> <span class="s1">&#39;{:,.2f}&#39;</span><span class="o">.</span><span class="n">format</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">max_rows</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">display</span><span class="p">(</span><span class="n">HTML</span><span class="p">(</span><span class="s2">&quot;&lt;style&gt;.container { width:90% !important; }&lt;/style&gt;&quot;</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+<style>.container { width:90% !important; }</style>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There are a lot of imports here. We'll also define some useful constants and
+settings, including a set of tiles for geographic projection later.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="kn">import</span> <span class="nn">itertools</span> <span class="k">as</span> <span class="nn">it</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">folium</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">holoviews</span> <span class="k">as</span> <span class="nn">hv</span>
+<span class="kn">from</span> <span class="nn">holoviews.operation.datashader</span> <span class="k">import</span> <span class="n">aggregate</span><span class="p">,</span> <span class="n">shade</span><span class="p">,</span> <span class="n">datashade</span><span class="p">,</span> <span class="n">dynspread</span>
+
+<span class="kn">import</span> <span class="nn">datashader</span> <span class="k">as</span> <span class="nn">ds</span>
+<span class="kn">from</span> <span class="nn">datashader.utils</span> <span class="k">import</span> <span class="n">export_image</span>
+<span class="kn">from</span> <span class="nn">datashader.colors</span> <span class="k">import</span> <span class="n">colormap_select</span><span class="p">,</span> <span class="n">Greys9</span><span class="p">,</span> <span class="n">inferno</span>
+<span class="kn">import</span> <span class="nn">datashader.transfer_functions</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="kn">import</span> <span class="nn">geoviews</span> <span class="k">as</span> <span class="nn">gv</span>
+<span class="kn">import</span> <span class="nn">cartopy</span>
+<span class="kn">from</span> <span class="nn">cartopy</span> <span class="k">import</span> <span class="n">crs</span>
+<span class="kn">from</span> <span class="nn">cartopy</span> <span class="k">import</span> <span class="n">feature</span> <span class="k">as</span> <span class="n">cf</span>
+<span class="kn">from</span> <span class="nn">geoviews</span> <span class="k">import</span> <span class="n">feature</span> <span class="k">as</span> <span class="n">gf</span>
+<span class="kn">from</span> <span class="nn">bokeh</span> <span class="k">import</span> <span class="n">palettes</span>
+<span class="kn">from</span> <span class="nn">bokeh.tile_providers</span> <span class="k">import</span> <span class="n">STAMEN_TONER</span>
+<span class="kn">from</span> <span class="nn">bokeh.models</span> <span class="k">import</span> <span class="n">WMTSTileSource</span>
+
+<span class="n">background</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span>
+<span class="n">export</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">export_image</span><span class="p">,</span> <span class="n">background</span> <span class="o">=</span> <span class="n">background</span><span class="p">,</span> <span class="n">export_path</span><span class="o">=</span><span class="s2">&quot;export&quot;</span><span class="p">)</span>
+<span class="n">cm</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">colormap_select</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="p">(</span><span class="n">background</span><span class="o">!=</span><span class="s2">&quot;black&quot;</span><span class="p">))</span>
+<span class="n">dynspread</span><span class="o">.</span><span class="n">max_px</span><span class="o">=</span><span class="mi">20</span>
+<span class="n">dynspread</span><span class="o">.</span><span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span>
+<span class="n">hv</span><span class="o">.</span><span class="n">notebook_extension</span><span class="p">(</span><span class="s1">&#39;mpl&#39;</span><span class="p">,</span> <span class="s1">&#39;bokeh&#39;</span><span class="p">)</span>
+<span class="n">tiles</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;OpenMap&#39;</span><span class="p">:</span> <span class="n">WMTSTileSource</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s1">&#39;http://c.tile.openstreetmap.org/{Z}/{X}/{Y}.png&#39;</span><span class="p">),</span>
+         <span class="s1">&#39;ESRI&#39;</span><span class="p">:</span> <span class="n">WMTSTileSource</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s1">&#39;https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{Z}/{Y}/{X}.jpg&#39;</span><span class="p">),</span>
+         <span class="s1">&#39;Wikipedia&#39;</span><span class="p">:</span> <span class="n">WMTSTileSource</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s1">&#39;https://maps.wikimedia.org/osm-intl/{Z}/{X}/{Y}@2x.png&#39;</span><span class="p">),</span>
+         <span class="s1">&#39;Stamen Toner&#39;</span><span class="p">:</span> <span class="n">STAMEN_TONER</span><span class="p">}</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+
+</div>
+
+</div>
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+
+</div>
+
+</div>
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_area"><div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+
+<script src="https://code.jquery.com/ui/1.10.4/jquery-ui.min.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+<style>div.bk-hbox {
+    display: flex;
+    justify-content: center;
+}
+
+div.bk-hbox div.bk-plot {
+    padding: 8px;
+}
+
+div.bk-hbox div.bk-data-table {
+    padding: 20px;
+}
+
+div.hololayout {
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+div.holoframe {
+	width: 75%;
+}
+
+div.holowell {
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+form.holoform {
+    background-color: #fafafa;
+    border-radius: 5px;
+    overflow: hidden;
+	padding-left: 0.8em;
+    padding-right: 0.8em;
+    padding-top: 0.4em;
+    padding-bottom: 0.4em;
+}
+
+div.holowidgets {
+    padding-right: 0;
+	width: 25%;
+}
+
+div.holoslider {
+    min-height: 0 !important;
+    height: 0.8em;
+    width: 60%;
+}
+
+div.holoformgroup {
+    padding-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+div.hologroup {
+    padding-left: 0;
+    padding-right: 0.8em;
+    width: 50%;
+}
+
+.holoselect {
+    width: 92%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.holotext {
+    width: 100%;
+    padding-left:  0.5em;
+    padding-right: 0;
+}
+
+.holowidgets .ui-resizable-se {
+	visibility: hidden
+}
+
+.holoframe > .ui-resizable-se {
+	visibility: hidden
+}
+
+.holowidgets .ui-resizable-s {
+	visibility: hidden
+}
+</style>
+
+
+<div>
+<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAIAAABLixI0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wkCDDIOi3cusgAABT1JREFUOMtVlclvG2UYh3/fMovHe53FThySNHZomrRJl6QR0AJdpVblQBEHJC4ciipxAgmO3PgPEP8BQkIsRUJUSF1oqGih0JY2CtnjOLGz2Em8xPbMeL6Pw9RJOprLjPT+5tH7Pu83JE7pqeHh8wMD2evfyXMXf/nxB2FZo6dPNzVHvvr6GxMQeOEigARswNzzUgK6x8NagPzS0nqxODQ62nLn1xMnX99/eLC3sGVROj2/IBxHABKgANlzM4ACTuMRAOecNREiAWtzc0NIEu/M37zVMTWeqlrpUDg1M7NTVgdkowwvxqGRRV1CE8jOznq7uhYAi2CpXtdVVQE4QAAdCAAGwAAJyEa9Amh7PsAihBBAABrg1XUfpe3bxTXb8XR0WJa1VSzWGyAcUAEVoIAARIMOQH2HC4AA6lKW8/n9Pm/Ahl4zV8fGTg0PtzQ3K3tA3GId8AO+BqZLt8sFQKE0GouRSkWtFM63KV0Vy1rJhN44k56cFFI6exJ3MBWANACVHS63aw5QtutVVT/4xWfHv/0ylytmHvx56sIFLxACfIABGIAf8ANRn++9y5evXrkS0XWXd5dLJWRfOHwspA1tr4iFtP3gD8/apjCtSDiyQYhZKNA94wOQTCQPhfzm9FTJH8jn84Tz3SyPlEQ4vf0Dt5/MPE5vpVObzQbxqvaDdL731MnWnh5pmsxxdE3rTCZfO3u2FbL6+2+hzpcKwXA2ldrNUgAVII7TMXhkZnzcAQTgAWI6sgV7YmKivLra1tFxMJk4Ho/r5fLy3btsYS7JHL1YoeHQKldKhcLzLNcdlRDOWDgczuVyOtDt4yN9gRYVmc161TTLmYw9P9e8OHcU5dG2fa3EmhNyKjGwROmzZ8+YqlIAKsDd9jtOenIy1t8vgDJQtuvYrjRT0kMQBRIUQxqSXkSDUIO0YAulvdfxGk/u33eVZs2EeBvu6gCjtKW7Oz81xQBhI73mtATQn/BuZ6wTrezsYX+1Jn+aNR8sl9Zb47l4/O+HD2u27QDgnHUQwhvKuFmRaLS2tkZsmwJSQpqIUzHYyynndx5t/1Vy5gXyhMhorEJIKpViQB0QnFNlZzkbdExRhBAckIAFbFXFetkpg94er004WK6jCniamrRAYHlmxhXFtWTXVfW50SQYDjvVKm+YHVMR10G5VAGrcWAohkEVpbC1RRo7QN2mS0BzuQiJHziwMTurAwrgBTo95NVjnshb3XaF9q1MTM7VeWNv6kJQgAISYAAHuARUQAHA2NCZM35KJ27c6KA4YiBXJlpVro5bkaGN2mStsCy8gAXobpyU7iFhAgxQAB40jMHh4WhnJ6nVpsfGVjOZUQMhi40k9K1FqQZI4ogffd3k33GPobTb5kCIFmriEYjgnABao60KwD68eCnz5PH0vXsr4+OsVIpRvNmpnLvQEozRpm5vxAP107dx+RMlvGTcmw7Xle6DwZlsdbZY05qbAq2ta9msCkhAcM4+yv+3uFZWAA+gA5pEaUOUnpaMohb+/BK7+j76r4IliFoyAv9EjsZ4ZbMmyOKqmdvciiWTL4+OUsY8mkY554d7okGyciuHqgQFVIABlkJ9fV44FLFrz8ecuIZ3u6offzD1fSnFmJSgle35mzcdVQ1Eo23B4Eh7lJdWNgZGohM/r5QAjZEoaDzi0TfKPlFDV/KF35mqs0NN1v3iRrqqAT7Xbdti6UXPImKZaf5SQiUBtAIG0OVXXnmnDUJWb9nET7D8VPba7pAJTKRnxPUpI+v0BXlApZPrlgDaCTke1VqaaLZC/wesjSVVF5Ac7QAAAABJRU5ErkJggg=='
+     style='width:25px;height:25px; border-radius:12px;'/>
+
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As mentioned in the previous post about boston crime data, here is our main entry point to read the data. I've added some conversion options here, making use of the pandas <code>Categorical</code> data type. We also have a method to convert lat/lon coordinates to web mercator format.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="k">def</span> <span class="nf">get_bpd_data</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">200000</span><span class="p">):</span>
+    <span class="n">dow</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Monday&quot;</span><span class="p">,</span> <span class="s2">&quot;Tuesday&quot;</span><span class="p">,</span> <span class="s2">&quot;Wednesday&quot;</span><span class="p">,</span> <span class="s2">&quot;Thursday&quot;</span><span class="p">,</span> <span class="s2">&quot;Friday&quot;</span><span class="p">,</span> <span class="s2">&quot;Saturday&quot;</span><span class="p">,</span> <span class="s2">&quot;Sunday&quot;</span><span class="p">]</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;https://data.boston.gov/datastore/odata3.0/&quot;</span>
+           <span class="s2">&quot;12cb3883-56f5-47de-afa5-3b1cf61b257b?$top={}&amp;$format=json&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">})</span>
+    <span class="c1"># data = data.assign(lat=data[&quot;lat&quot;].astype(float))</span>
+    <span class="c1"># data = data.assign(long=data[&quot;lat&quot;].astype(float))</span>
+    <span class="k">def</span> <span class="nf">convert_loc</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">split</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;[()]&quot;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">split</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">split</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    
+    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span>
+            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;location&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">convert_loc</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;location&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">long</span><span class="o">=</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;location&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">hour</span><span class="o">=</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;hour&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">offense_code_group</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;offense_code_group&quot;</span><span class="p">]))</span>
+            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">day_of_week</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;day_of_week&quot;</span><span class="p">],</span> <span class="n">categories</span><span class="o">=</span><span class="n">dow</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">month</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;month&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)))</span>
+           <span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+<span class="k">def</span> <span class="nf">latlng_to_meters</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">lat_name</span><span class="p">,</span> <span class="n">lng_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Taken and modified from the datashader notebooks </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lat</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">lat_name</span><span class="p">]</span>
+    <span class="n">lng</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">lng_name</span><span class="p">]</span>
+    <span class="n">origin_shift</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mi">6378137</span> <span class="o">/</span> <span class="mf">2.0</span>
+    <span class="n">mx</span> <span class="o">=</span> <span class="n">lng</span> <span class="o">*</span> <span class="n">origin_shift</span> <span class="o">/</span> <span class="mf">180.0</span>
+    <span class="n">my</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">((</span><span class="mi">90</span> <span class="o">+</span> <span class="n">lat</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">360.0</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span><span class="p">)</span>
+    <span class="n">my</span> <span class="o">=</span> <span class="n">my</span> <span class="o">*</span> <span class="n">origin_shift</span> <span class="o">/</span> <span class="mf">180.0</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">mx</span><span class="o">=</span><span class="n">mx</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">my</span><span class="o">=</span><span class="n">my</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>So let's read some data and get on to plotting.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">data</span> <span class="o">=</span> <span class="n">get_bpd_data</span><span class="p">(</span><span class="mi">250000</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>For this post, we'll want to clean up the geo data and redfine a few categorical variables. 
+It's a bit script-y, but this almost never needs to be tinkered with.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">drops</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;offense_description&quot;</span><span class="p">,</span> <span class="s2">&quot;occurred_on_date&quot;</span><span class="p">,</span> <span class="s2">&quot;shooting&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;reporting_area&quot;</span><span class="p">,</span> <span class="s2">&quot;street&quot;</span><span class="p">,</span> <span class="s2">&quot;ucr_part&quot;</span><span class="p">,</span> <span class="s2">&quot;_id&quot;</span><span class="p">,</span> <span class="s2">&quot;incident_number&quot;</span><span class="p">]</span>
+
+<span class="n">dow</span> <span class="o">=</span> <span class="p">[</span> <span class="s2">&quot;Monday&quot;</span><span class="p">,</span> <span class="s2">&quot;Tuesday&quot;</span><span class="p">,</span> <span class="s2">&quot;Wednesday&quot;</span><span class="p">,</span> <span class="s2">&quot;Thursday&quot;</span><span class="p">,</span> <span class="s2">&quot;Friday&quot;</span><span class="p">,</span> <span class="s2">&quot;Saturday&quot;</span><span class="p">,</span> <span class="s2">&quot;Sunday&quot;</span><span class="p">,]</span>
+<span class="n">tod</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;late_night&quot;</span><span class="p">,</span> <span class="s2">&quot;morning&quot;</span><span class="p">,</span> <span class="s2">&quot;midday&quot;</span><span class="p">,</span> <span class="s2">&quot;drive_home&quot;</span><span class="p">,</span> <span class="s2">&quot;evening&quot;</span><span class="p">,</span> <span class="s2">&quot;night&quot;</span><span class="p">]</span>
+<span class="n">top_cats</span> <span class="o">=</span> <span class="s1">&#39;Drug Violation&#39;</span><span class="p">,</span> <span class="s1">&#39;Investigate Person&#39;</span><span class="p">,</span> <span class="s1">&#39;Other&#39;</span><span class="p">,</span> <span class="s1">&#39;Larceny&#39;</span><span class="p">,</span> <span class="s1">&#39;Motor Vehicle Accident Response&#39;</span>
+<span class="n">pdata</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span>
+         <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">drops</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+         <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;offense_code_group in @top_cats&quot;</span><span class="p">)</span>
+         <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;lat &gt; 40 and long &lt; -70&quot;</span><span class="p">)</span>
+         <span class="o">.</span><span class="n">pipe</span><span class="p">(</span><span class="n">latlng_to_meters</span><span class="p">,</span> <span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;long&quot;</span><span class="p">)</span>
+         <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">offense_code_group</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;offense_code_group&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;str&quot;</span><span class="p">)))</span>
+         <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">tod</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span>
+                                      <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span>  <span class="mi">24</span><span class="p">],</span>
+                                      <span class="n">include_lowest</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                      <span class="n">labels</span><span class="o">=</span><span class="n">tod</span><span class="p">))</span>
+        <span class="p">)</span>
+<span class="n">boston_coords</span> <span class="o">=</span> <span class="p">(</span><span class="n">pdata</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="p">,</span> <span class="n">pdata</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span> <span class="p">(</span><span class="n">pdata</span><span class="p">[</span><span class="s2">&quot;long&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">pdata</span><span class="p">[</span><span class="s2">&quot;long&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="n">lx_range</span> <span class="o">=</span> <span class="n">pdata</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">pdata</span><span class="p">[</span><span class="s2">&quot;long&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<span class="n">ly_range</span> <span class="o">=</span> <span class="n">pdata</span><span class="p">[</span><span class="s2">&quot;lat&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">pdata</span><span class="p">[</span><span class="s2">&quot;long&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<span class="n">x_range</span> <span class="o">=</span> <span class="n">pdata</span><span class="p">[</span><span class="s2">&quot;mx&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">pdata</span><span class="p">[</span><span class="s2">&quot;mx&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<span class="n">y_range</span> <span class="o">=</span> <span class="n">pdata</span><span class="p">[</span><span class="s2">&quot;my&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">pdata</span><span class="p">[</span><span class="s2">&quot;my&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+<span class="c1"># I left these in here for posterity. I had wanted to explore other aspects. </span>
+<span class="n">tod_colors</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">tod</span><span class="p">,</span>  <span class="n">palettes</span><span class="o">.</span><span class="n">Category10</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">tod</span><span class="p">)]</span> <span class="p">))</span>
+<span class="n">dow_colors</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">dow</span><span class="p">,</span>  <span class="n">palettes</span><span class="o">.</span><span class="n">Category10</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">dow</span><span class="p">)]))</span>
+<span class="n">offense_colors</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">top_cats</span><span class="p">,</span>  <span class="n">palettes</span><span class="o">.</span><span class="n">Category10</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">top_cats</span><span class="p">)]</span> <span class="p">))</span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Using-Holoviews">Using Holoviews<a class="anchor-link" href="#Using-Holoviews">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Holoviews is a radically different way of working with data. You define a container for the data and use that to define operations. Perhaps the most simple format is the <code>Table</code> container.</p>
+<p>While holoviews does support aggregation within a dataset, in this case it was a bit more clear to do it up front. We'll take the "log" or "melted" format of our data (one row per observation) and aggregate down to some counts per category. From there, we can create a <code>Table</code> and pass the grouping columns as indexers, with the <code>count</code> value as the ... value dimension.</p>
+<p>Note the inclusion of the <code>IFrame</code> loading the chart back into the notebook. Holoviews does not support exporting from the notebook the plots correctly via Bokeh as a backend. I'm sure I might be able to figure out a more elegant workaround, but saving the charts to a file, using shell tools to add in the bokeh JS headers, and loading it into an iframe for blogging seems to have worked for now. If you happen to copy this code, you'll get live plots within the notebook.</p>
+<p>It's quite inelegant, but the plots look great.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">tdata</span> <span class="o">=</span> <span class="p">(</span><span class="n">pdata</span>
+         <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;day_of_week&quot;</span><span class="p">,</span> <span class="s2">&quot;hour&quot;</span><span class="p">,</span> <span class="s2">&quot;offense_code_group&quot;</span><span class="p">])</span>
+         <span class="o">.</span><span class="n">size</span><span class="p">()</span>
+         <span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">)</span>
+         <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="p">)</span>
+<span class="n">tdata</span> <span class="o">=</span> <span class="n">hv</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="n">tdata</span><span class="p">,</span> <span class="n">kdims</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;day_of_week&quot;</span><span class="p">,</span> <span class="s2">&quot;hour&quot;</span><span class="p">,</span> <span class="s2">&quot;offense_code_group&quot;</span><span class="p">],</span> <span class="n">vdims</span><span class="o">=</span><span class="p">[</span> <span class="s2">&quot;count&quot;</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>From here, we can rapidly visualize the data, though the holoviews semantics are a bit odd to learn. In a notebook, you can specify your chart options up front via the <code>%%opts</code> syntax.</p>
+<p>From what I can tell, when you specify a transformation to a chart type, holoviews computes everything up front, and if you have multiple dimensions you can slice one out like this heatmap of drug violations by day and hour.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">%%</span><span class="k">output</span> filename=&quot;bpd_crimemap_advanced_hm_dv_simp&quot;
+%%opts HeatMap [width=500, height=500 colorbar=True tools=[&quot;hover&quot;]] (cmap=&quot;Blues&quot;)
+(tdata.to.heatmap([&quot;day_of_week&quot;, &quot;hour&quot;], [&quot;count&quot;], )
+ .select(offense_code_group=&quot;Drug Violation&quot;)
+ .relabel(&quot;Drug Violations&quot;) # change the title
+)
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt"> </div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style='display: table; margin: 0 auto;'>
+
+    <div class="bk-root">
+        <div class="bk-plotdiv" id="45a86a8b-5c9b-43f0-a82a-bf11cbe3bf67"></div>
+    </div>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">IFrame</span><span class="p">(</span><span class="s1">&#39;./bpd_crimemap_advanced_hm_dv_simp.html&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt"> </div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+        <iframe
+            width="750"
+            height="500"
+            src="/resources/bpd_crimemap_advanced_hm_dv_simp.html"
+            frameborder="0"
+            allowfullscreen
+        ></iframe>
+        
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, if we want to collapse across the <code>offense_code_group</code> category to see the pattern of all violations, we can aggregate as such within our <code>Table</code>. (It's essentially the same as a <code>groupby</code> in pandas but the aggregation function is passed explicitly.)</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">%%</span><span class="k">output</span> filename=&quot;bpd_crimemap_advanced_hm_all_agg&quot;
+%%opts HeatMap [width=600, height=400 colorbar=True, tools=[&quot;hover&quot;] toolbar=&quot;above&quot;]  (cmap=&quot;Blues&quot;)
+(tdata
+ .aggregate([&quot;hour&quot;, &quot;day_of_week&quot;], function=np.sum)
+ .to.heatmap([&quot;hour&quot;, &quot;day_of_week&quot;], [&quot;count&quot;], )
+).relabel(&quot;Violations by day and hour&quot;)
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt"> </div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style='display: table; margin: 0 auto;'>
+
+    <div class="bk-root">
+        <div class="bk-plotdiv" id="576f06ad-7085-4880-9fcc-e2b5e5c90b5f"></div>
+    </div>
+</script></div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">IFrame</span><span class="p">(</span><span class="s1">&#39;./bpd_crimemap_advanced_hm_all_agg.html&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">750</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt"> </div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+        <iframe
+            width="750"
+            height="500"
+            src="/resources/bpd_crimemap_advanced_hm_all_agg.html"
+            frameborder="0"
+            allowfullscreen
+        ></iframe>
+        
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see that overwhelmingly, violations tend to happen during the day, particularly in the later afternoon. There is a bit of a shift in this pattern on weekends.</p>
+<p>Let's break out a similar chart by the type of offense. Now for a bit more of a fancy layout, we can generate an aptly-named <code>Layout</code>, which takes a list of charts. 
+Note the explict selection and  relabeling operations with the offense codes. Unfortunetely, the color bars ranges are not uniform.</p>
+<p>So it goes.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">%%</span><span class="k">output</span> filename=&quot;bpd_crimemap_advanced_hm_iter&quot;
+%%opts HeatMap [width=420, height=275 colorbar=True tools=[&quot;hover&quot;] show_title=True]  (cmap=&quot;Blues&quot;)
+%%opts Layout [aspect_weight=1 fig_size=150 sublabel_position=(-0.2, 1.)]
+hv.Layout([tdata.to.heatmap([&quot;hour&quot;, &quot;day_of_week&quot;], [&quot;count&quot;])
+           .select(offense_code_group=ofg)
+           .relabel(ofg)
+           for ofg in offense_colors.keys()]).cols(2)
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>WARNING:root:LayoutPlot14100: None is empty, skipping subplot.
+WARNING:root:LayoutPlot14280: None is empty, skipping subplot.
+</pre>
+</div>
+</div>
+
+<div class="output_area"><div class="prompt output_prompt"> </div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style='display: table; margin: 0 auto;'>
+
+    <div class="bk-root">
+        <div class="bk-plotdiv" id="2c1cd429-f0e5-467a-9728-de001489c854"></div>
+    </div>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">IFrame</span><span class="p">(</span><span class="s1">&#39;bpd_crimemap_advanced_hm_iter.html&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt"> </div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+        <iframe
+            width="800"
+            height="800"
+            src="/resources/bpd_crimemap_advanced_hm_iter.html"
+            frameborder="0"
+            allowfullscreen
+        ></iframe>
+        
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we can see some details:</p>
+<ul>
+<li>Drug violations have an extremely tight pattern, overwhelmingly occuring during the early evening hours during the week. Apparently people don't seek drugs on Sunday all that much.</li>
+<li>Car accidents occur mostly during the afternoon rush hour, but also have a slight increase in the morning rush hour period. This is shifted wildly on the weekends, where many late-night and early-morning accidents occur.</li>
+</ul>
+<p>Holoviews gives the option of passing the full dataset with your key dimensions, adding interactivity with the remaining key dimensions. We rearrange the chart here to look at hourly variations among offense types.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">%%</span><span class="k">output</span> filename=&quot;bpd_crimemap_advanced_hm_iter_interact&quot;
+%%opts HeatMap [width=600, height=400 tools=[&quot;hover&quot;]]  (cmap=&quot;Blues&quot;)
+tdata.to.heatmap([ &quot;hour&quot;, &quot;offense_code_group&quot;,], [&quot;count&quot;])
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt"> </div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div class="hololayout row row-fluid">
+  <div class="holoframe" id="display_area53854bf471ef4739b87ee7c823c61188">
+    <div id="_anim_img53854bf471ef4739b87ee7c823c61188">
+      
+      <div style='display: table; margin: 0 auto;'>
+
+    <div class="bk-root">
+        <div class="bk-plotdiv" id="6fbf2089-ec4e-4c14-a0b2-f3789df92bf3"></div>
+    </div>
+        
+        
+        </form>
+    </div>
+</div>
+
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">IFrame</span><span class="p">(</span><span class="s1">&#39;bpd_crimemap_advanced_hm_iter_interact.html&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt"> </div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+        <iframe
+            width="900"
+            height="500"
+            src="/resources/bpd_crimemap_advanced_hm_iter_interact.html"
+            frameborder="0"
+            allowfullscreen
+        ></iframe>
+        
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Geo-level">Geo level<a class="anchor-link" href="#Geo-level">&#182;</a></h2><p>So, the heatmaps are really great ways of visualizing patterns across categories, but with this dataset, we do have the geospatial information associated with each stop. It makes sense, like in the previous post, to look at this within the context of the city itself. Geoviews, a companion to Holoviews, combined with Datashader, can simplify some of that work.</p>
+<p>We do not need to aggregate down to the level of a choropleth, we want the
+data to speak for itself without enforcing a form on to it first. This roughly
+follows the data-cenric trend of machine learning overall, learning from the
+data directly vs assuming or forcing it to follow your favorite distribution.</p>
+<p>Note that this part is a bit funky to work with at times and the plots probably won't work as smoothly in your browser as they do in a notebook. If you want, download the notebook do this yourself.</p>
+<p>I have heavily leaned on samples from the following sources to build this:</p>
+<ul>
+<li><a href="https://www.continuum.io/blog/developer-blog/introducing-geoviews">https://www.continuum.io/blog/developer-blog/introducing-geoviews</a></li>
+<li><a href="https://anaconda.org/jbednar/census-hv/notebook">https://anaconda.org/jbednar/census-hv/notebook</a></li>
+</ul>
+<p>I already loaded the relevant libraries in the top of the notebook; I dislike the clutter of having imports scattered around. :)</p>
+<p>This function helps generate named color points for each category in a set of categories.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="k">def</span> <span class="nf">gen_col_points</span><span class="p">(</span><span class="n">categories</span><span class="p">,</span> <span class="n">colormap</span><span class="p">):</span>
+    <span class="n">inv_cats</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">}</span>
+    <span class="n">color_points</span> <span class="o">=</span> <span class="n">hv</span><span class="o">.</span><span class="n">NdOverlay</span><span class="p">({</span><span class="n">inv_cats</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span> <span class="n">gv</span><span class="o">.</span><span class="n">Points</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+                                                        <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span>
+                                                        <span class="n">label</span><span class="o">=</span><span class="n">inv_cats</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                                 <span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">v</span><span class="p">))</span>
+                                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">colormap</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+    <span class="k">return</span> <span class="n">color_points</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, the method for generating the plotting data follows a few conventions.</p>
+<ul>
+<li>since we'll use datashading, we want to set those options here. </li>
+<li>we make a <code>Points</code> dataset, keying on the actual web mercator coordinates <code>mx</code>, <code>my</code></li>
+<li>use datashader to aggregate down to the categorical level you want</li>
+<li>overlay the points and legend on a set of tiles (defined earlier).</li>
+</ul>
+<p>The options help define our basic styling elements, and bokeh gives us interactivity.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">%%</span><span class="k">output</span> filename=&quot;bpd_datashaded_points&quot;
+%%opts Overlay [width=800 height=600 xaxis=None yaxis=None show_grid=False ] (background_alpha=0.1) 
+%%opts Shape (fill_color=None line_width=1.5) [apply_ranges=False] 
+%%opts Points [apply_ranges=False tools=[]]
+%%opts WMTS (alpha=0.25)
+
+shade_defaults = dict(x_range=(x_range[0] + 10000, x_range[1] - 5000),
+                      y_range=(y_range[0] + 8500, y_range[1] - 6000),
+                      width=1200,
+                      height=660)
+
+shaded_points = datashade(hv.Points(gv.Dataset(pdata, kdims=[&quot;mx&quot;, &quot;my&quot;], vdims=[&quot;offense_code_group&quot;])),
+                          cmap=offense_colors,
+                          element_type=gv.Image,
+                          aggregator=ds.count_cat(&quot;offense_code_group&quot;),
+                          **shade_defaults
+                         )
+
+color_points = gen_col_points(offense_colors.keys(), offense_colors)
+
+map_ = gv.WMTS(tiles[&quot;Stamen Toner&quot;]) * dynspread(shaded_points, max_px=10, threshold=0.8) * color_points
+map_
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt"> </div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style='display: table; margin: 0 auto;'>
+
+    <div class="bk-root">
+        <div class="bk-plotdiv" id="90ff20cc-5264-4fd3-b04d-956059970d6e"></div>
+    </div>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">IFrame</span><span class="p">(</span><span class="s1">&#39;bpd_datashaded_points.html&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">650</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt"> </div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+        <iframe
+            width="900"
+            height="650"
+            src="/resources/bpd_datashaded_points.html"
+            frameborder="0"
+            allowfullscreen
+        ></iframe>
+        
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The datashaded version only works well in the live notebook, but you can get a sense of  what is happening from the high level.</p>
+<p>To see the points explicitly plotted without shading (which might not really be needed in this case as we don't have too many points), we can use this method.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="o">%%</span><span class="k">output</span> filename=&quot;bpd_nonshaded_points&quot;
+%%opts Overlay [width=800 height=700 xaxis=None yaxis=None show_grid=False] 
+%%opts Points [apply_ranges=True color_index=2 tools=[&#39;tap&#39;, &quot;resize&quot;, &quot;hover&quot;, &quot;box_zoom&quot;]]
+%%opts Points (cmap=&quot;gist_rainbow_r&quot; alpha=0.5 size=1.25)
+%%opts WMTS (alpha=0.4)
+
+kdims=[ &quot;lat&quot;, &quot;long&quot;, ]
+vdims = [&quot;offense_code_group&quot;, &quot;day_of_week&quot;, &quot;hour&quot;]
+gvdata = gv.Dataset(pdata,
+                    kdims=kdims,
+                    vdims=vdims,
+                   )
+
+points = gvdata.to(gv.Points, 
+                   kdims=[&#39;long&#39;, &#39;lat&#39;],
+                   vdims=[&quot;offense_code_group&quot;, &quot;day_of_week&quot;],
+                   crs=crs.PlateCarree()
+                  )
+
+gv.WMTS(tiles[&quot;Stamen Toner&quot;]) * points
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt"> </div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div style='display: table; margin: 0 auto;'>
+
+    <div class="bk-root">
+        <div class="bk-plotdiv" id="7b813d23-3b60-4428-8f6e-1c3f5e653426"></div>
+    </div>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt"> </div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span class="n">IFrame</span><span class="p">(</span><span class="s1">&#39;bpd_nonshaded_points.html&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt"> </div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+        <iframe
+            width="800"
+            height="800"
+            src="/resources/bpd_nonshaded_points.html"
+            frameborder="0"
+            allowfullscreen
+        ></iframe>
+        
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I cannot for the life of me figure out how to pass a custom color mapping to the bokeh backend. Anyway, zoom around in the map to see some minor patterns in the violations data - drug incidents overwhelmingly occur in a few concentrated areas, accidents occur along major commuting routes, etc.</p>
+<p>I'll revisit this data again and wrap up some observations in a future post, aimed at a broader audience.</p>
+
+</div>
+</div>
+</div>
+    </div>
+  </div>
+</body>
+</html>
+
+        <hr />
+        <footer class="page-footer">
+          
+
+
+<div class="author-image">
+	<img src="http://aarongonzales.net/images/avatar.jpg" alt="Aaron Gonzales">
+</div><!-- ./author-image -->
+<div class="author-content">
+	<h3 class="author-name" >Written by <span itemprop="author">Aaron Gonzales</span></h3>
+	<p class="author-bio">I'm a typically atypical guy.</p>
+</div><!-- ./author-content -->
+          <div class="inline-btn">
+	<a class="btn-social twitter" href="https://twitter.com/intent/tweet?text=Visualizing%20incident%20report%20patterns%20from%20the%20Boston%20Police%20Department&amp;url=http://aarongonzales.net/posts/nerd/2017/05/18/bpd_cm_advanced/&amp;via=binary_aaron" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter</a>
+	<a class="btn-social facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://aarongonzales.net/posts/nerd/2017/05/18/bpd_cm_advanced/" target="_blank"><i class="fa fa-facebook" aria-hidden="true"></i> Share on Facebook</a>
+	<a class="btn-social google-plus"  href="https://plus.google.com/share?url=http://aarongonzales.net/posts/nerd/2017/05/18/bpd_cm_advanced/" target="_blank"><i class="fa fa-google-plus" aria-hidden="true"></i> Share on Google+</a>
+</div><!-- /.share-this -->
+          <div class="page-meta">
+	<p>Updated <time datetime="2017-05-18T00:00:00Z" itemprop="datePublished">May 18, 2017</time></p>
+</div><!-- /.page-meta -->
+        </footer><!-- /.footer -->
+        <aside>
+          
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'hackofahacker'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+        </aside>
+      </div><!-- /.content -->
+    </div><!-- /.inner-wrap -->
+    
+  </article><!-- ./wrap -->
+</div><!-- /#main -->
+
+      <footer role="contentinfo" id="site-footer">
+	<nav role="navigation" class="menu bottom-menu">
+		<ul class="menu-item">
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/" >Home</a></li>
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/contact" >Contact</a></li>
+		
+		</ul>
+	</nav><!-- /.bottom-menu -->
+	<p class="copyright">&#169; 2017 <a href="http://aarongonzales.net">a hack of a hacker</a> powered by <a href="http://jekyllrb.com" rel="nofollow">Jekyll</a> + <a href="http://mmistakes.github.io/skinny-bones-jekyll/" rel="nofollow">Skinny Bones</a>.</p>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-11008365-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</footer>
+
+    </div>
+
+    <script src="http://aarongonzales.net/js/vendor/jquery-1.9.1.min.js"></script>
+    <script src="http://aarongonzales.net/js/main.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+    <link rel="stylesheet" href="/css/styles/custom.css">
+    <script src="/css/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+
+</html>

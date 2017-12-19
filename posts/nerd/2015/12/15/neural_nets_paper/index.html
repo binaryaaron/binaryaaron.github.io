@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Some words about neural architectures • a hack of a hacker</title>
+    <meta name="description" content="chunks of a paper for a neural computing course.">
+    <meta name="keywords" content="neural networks, data science, machine learning">
+    
+    
+    	<!-- Twitter Cards -->
+	<meta name="twitter:title" content="Some words about neural architectures">
+	<meta name="twitter:description" content="chunks of a paper for a neural computing course.">
+	<meta name="twitter:site" content="@binary_aaron">
+	<meta name="twitter:creator" content="@binary_aaron">
+	
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:image" content="http://aarongonzales.net/images/gggraph_crop.jpeg">
+	
+	<!-- Open Graph -->
+	<meta property="og:locale" content="">
+	<meta property="og:type" content="article">
+	<meta property="og:title" content="Some words about neural architectures">
+	<meta property="og:description" content="chunks of a paper for a neural computing course.">
+	<meta property="og:url" content="http://aarongonzales.net/posts/nerd/2015/12/15/neural_nets_paper/">
+	<meta property="og:site_name" content="a hack of a hacker">
+
+    <link rel="canonical" href="http://aarongonzales.net/posts/nerd/2015/12/15/neural_nets_paper/"> 
+    <link href='https://fonts.googleapis.com/css?family=Crimson+Text' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/font-hack/2.019/css/hack.min.css" type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Bitter:400italic' rel='stylesheet' type='text/css'>
+
+
+    <link href="http://aarongonzales.net/atom.xml" type="application/atom+xml" rel="alternate" title="a hack of a hacker Atom Feed">
+    <link href="http://aarongonzales.net/sitemap.xml" type="application/xml" rel="sitemap" title="Sitemap">
+
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="cleartype" content="on">
+
+    <link rel="stylesheet" href="http://aarongonzales.net/css/main.css">
+    <!-- HTML5 Shiv and Media Query Support for IE -->
+    <!--[if lt IE 9]>
+      <script src="http://aarongonzales.net/js/vendor/html5shiv.min.js"></script>
+      <script src="http://aarongonzales.net/js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body id="js-body">
+    <!--[if lt IE 9]><div class="upgrade notice-warning"><strong>Your browser is quite old!</strong> Why not <a href="http://whatbrowser.org/">upgrade to a newer one</a> to better enjoy this site?</div><![endif]-->
+
+    <header id="masthead">
+
+
+  <div class="inner-wrap">
+    <a href="http://aarongonzales.net/" class="site-title">a hack of a hacker</a>
+    <nav role="navigation" class="menu top-menu">
+        <ul class="menu-item">
+	<li class="home"><a href="/">a hack of a hacker</a></li>
+	
+    
+        
+    
+    <li><a href="http://aarongonzales.net/posts/" >Posts</a></li>
+  
+    
+        
+    
+    <li><a href="http://aarongonzales.net/about/" >About</a></li>
+  
+</ul>
+
+    </nav>
+  </div><!-- /.inner-wrap -->
+</header><!-- /.masthead -->
+
+    <nav role="navigation" id="js-menu" class="sliding-menu-content">
+  <h5>a hack of a hacker <span>Table of Contents</span></h5>
+  <ul class="menu-item">
+    <li>
+      <a href="http://aarongonzales.net/posts/">
+        <img src="http://aarongonzales.net/images/clouds.jpg" alt="teaser" class="teaser">
+        <div class="title">Posts</div>
+        <p class="excerpt">Writing, coursework, reports, and projects</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/about/">
+        <img src="http://aarongonzales.net/images/avatar_long.jpg" alt="teaser" class="teaser">
+        <div class="title">About</div>
+        <p class="excerpt">I'm a regular guy, except when I'm not. Learn more about me here.</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/portfolio/">
+        <img src="http://aarongonzales.net/images/blog/decision_tree_teaser.png" alt="teaser" class="teaser">
+        <div class="title">Portfolio</div>
+        <p class="excerpt">A smattering of my work</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/coursework/">
+        <img src="http://aarongonzales.net/images/ethereal.jpg" alt="teaser" class="teaser">
+        <div class="title">Coursework</div>
+        <p class="excerpt">Stuff from my courses that may be useful to someone</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/research/">
+        <img src="http://aarongonzales.net/images/blog/fb_clusters_teaser.jpg" alt="teaser" class="teaser">
+        <div class="title">Research</div>
+        <p class="excerpt">Research updates and commentary</p>
+      </a>
+    </li><li>
+      <a href="http://aarongonzales.net/friends/">
+        <img src="http://aarongonzales.net/images/blog/fb_network_long.jpg" alt="teaser" class="teaser">
+        <div class="title">Friends</div>
+        <p class="excerpt">People whom I follow or like</p>
+      </a>
+    </li>
+  </ul>
+</nav>
+<button type="button" id="js-menu-trigger" class="sliding-menu-button lines-button x2" role="button" aria-label="Toggle Navigation">
+  <span class="nav-lines"></span>
+</button>
+
+<div id="js-menu-screen" class="menu-screen"></div>
+
+
+    <div id="page-wrapper">
+      <div id="main" role="main">
+  <article class="wrap" itemscope itemtype="http://schema.org/Article">
+    
+    
+  <nav class="breadcrumbs">
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net" itemprop="url">
+        <span itemprop="title">Home</span>
+      </a> › 
+    <span itemscope itemtype="http://data-vocabulary.org/Breadcrumb">
+      <a href="http://aarongonzales.net/posts/" itemprop="url">
+        <span itemprop="title">Posts</span>
+      </a>
+    </span>
+  </nav><!-- /.breadcrumbs -->
+
+    <div class="page-title">
+      <h1>Some words about neural architectures</h1>
+    </div>
+    <div class="inner-wrap">
+      <nav class="toc"></nav><!-- /.toc -->
+      <div id="content" class="page-content" itemprop="articleBody">
+        <h2 id="deep-learning">intro</h2>
+
+<p>
+This is a sample from a term paper from a neural architecture class. Note that
+converting a complex latex document to clean markdown for a Jekyll blog is a
+bit... tedious. As such, some of the references don't work the way they should
+and figures might be a bit futzed up. Anyway....</p>
+
+
+
+
+<h3 id="deep-convolutional-networks">Deep convolutional networks</h3>
+<p>In 1995, LaCun and Bengio introduced a paper that detailed the convolutional learning model as a “deep” architectures for neural networks. Frequently, most neural networks have small numbers of hidden layers as training can be problematic. LaCun and Bengio demonstrate the power of using many complex layers to recognize complex patters and structure in data without generating useful features prior to training — the network “learns” the features on its own. Convolutional networks preserve local structure in input by passing several connections from one layer onto a small number of connections in a new layer, repeating until only class labels are output. This implementation was inspired by work on the feline visual system, where Hubel and Wiesel discovered location-sensitive and orientation-selective neurons in the visual cortex <span class="citation" data-cites="hubel_receptive_1959 hubel_receptive_1962">1, [2]</span>. Output from one of these levels to a new layer is called a feature map, and the feature map is passed on to the next layer. Convolutional layers accept multiple feature maps as input The weights learned by the units in the feature map is the kernel of the convolution. First-layer networks can extract basic features — edges, corners, endpoints — and later networks can arrange those learned features to represent the input images.</p>
+<p>Subsampling layers are comprised of various <span class="math inline">\(2 \times 2\)</span> “neurons” that compute the average of the previous layer’s input and processes it via a training bias and coefficient before applying an activation function to it. The subsampling layer reduces the size of the feature map by a factor of four, only to pass it on to a new convolutional layer. Each layer increases the number of feature maps and decreases spacial resolution. In LeNet-5, the output layer consists of Euclidean Radial Basis Functions, one per class for each class in the dataset which compute the distance between the given feature vector and a parameter vector. Figure [fig:lenet5] gives an overview of the architecture.</p>
+<figure>
+<img src="/fig/lenet5_arch.png" alt="image" /><figcaption>image</figcaption>
+</figure>
+<p>Discussion is given to using various types of loss functions but use Minimum Squared Error <span class="math inline">\(E(W) = \frac{1}{P}\sum_{p=1}^{P}yD^p(Z^p, W)\)</span> where <span class="math inline">\(yD^p\)</span> is the output of <span class="math inline">\(RBF_{D_p}\)</span>. The network is trained with a slightly modified backpropagation — the gradients of shared weights are the sum of the gradients of the shared parameters.</p>
+<p>The model is tested rigorously on a handwriting recognition dataset (MNIST, and outperforms other state-of-the-art machine learners. The authors prove that their architecture is resistant to noise and rotation/warping in images, similar to mammalian visual systems and crucial to learn in “Real” environments.</p>
+<h3 id="layer-wise-pretraining">Layer-wise Pretraining</h3>
+<p>Deep learning architectures are not all similar to convolutional networks as described above. The authors begin by describing issues that arose with full-connected deep networks, as the process is a possibly intractable optimization problem. Hinton <span class="citation" data-cites="hinton_fast_2006">3</span> introduced greedy layer-wise pretraining using unsupervised methods and changed the field — but why unsupervised pretraining works well was not well understood. They primarily find that pretraining acts as a pseudoregularizer, optimizes parameters in low levels, hurts shallow network performance, and acts differently than finding a good set of weights. They describe the general process for pretraining for all the contemporary approaches as learning the single deepest layer with an unsupervised method and then all remaining layers are tuned from that. Following, training data is used to fine-tune the weights by minimizing a loss function. Each layer is trained in isolation — that is other layers are held constant during a layer’s pretraining.</p>
+<p>They introduce the denoising autoencoder (DnAE) as an enhancement over a traditional autoencoder, though companion papers describe the training process in more detail. The DnAE operates on a network layer-by-layer with inputs <span class="math inline">\(x\)</span>, either raw input data or the current layer’s output and gets an output code vector <span class="math inline">\(h(x)\)</span> where <span class="math inline">\(h(x) = sigmoid(\beta + Wx)\)</span> e.g., a traditional neural network. <span class="math inline">\(C(x)\)</span> is their stochastic corruption of the input <span class="math inline">\(x\)</span>, where random samples of <span class="math inline">\(C(x)\)</span> are set to 0 and reconstruction of the signal is defined as <span class="math inline">\(\hat{x} = \text{sigmoid}\left(c + W^T h \left(C\left(x\right)\right)\right)\)</span> where <span class="math inline">\(c\)</span> is a bias. Stochastic gradient descent over the DnAE is computed as <span class="math display">\[\theta = \theta - \epsilon \frac{\partial KL \left(x||\hat{x}\right)}{\partial\theta}\]</span> where <span class="math inline">\(\theta = (b, c, W)\)</span>, <span class="math inline">\(\epsilon\)</span> is a learning rate, and <span class="math inline">\(KL(X||\hat{x})\)</span> is the sum of the component-wise KL divergence between the probability distributions associated with each element of <span class="math inline">\(x\)</span> and it’s possible reconstruction probabilities <span class="math inline">\(\hat{x}\)</span>. The output layer estimates <span class="math inline">\(P(\text{class}|x)\)</span>.</p>
+<p>The authors use DnAEs with two datasets: one synthetic of 50000 training, 10000 validation, and 10000 test instances of <span class="math inline">\(10 \times 10\)</span> images of triangles and squares. The second dataset is MNIST as described above. They test DnAE compared to supervised gradient descent over several different architectures. For deep architectures trained via gradient descent, they suggest that increasing network depth increases the probability of finding poor local minima from random initialization.</p>
+<p>The effects of pretraining lead to better generalization. They investigate this via visualizing the layers in the network to show what kind of features they were learning. Pretrained networks learn more cohesive features which will lead to better separation between patterns or images. This is postulated to be due to pretraining finding better local optima within a weight space, initializing the layers to be in an already semi-convex space. This is not achieved by non-pretraining strategies. Weight trajectory drift over time was also investigated via visualization (See Figure [fig:tsne_ae])</p>
+<figure>
+<img src="/fig/tsne_ae.png" alt="2D projection of training paths for 2-layer networks with and without pretraining on MNIST. Blue to red indicates training iteration. Adapted from 4." /><figcaption>2D projection of training paths for 2-layer networks with and without pretraining on MNIST. Blue to red indicates training iteration. Adapted from <span class="citation" data-cites="erhan_why_2010">4</span>.<span data-label="fig:tsne_ae"></span></figcaption>
+</figure>
+<h2 id="evolving-neural-networks">Evolving Neural networks</h2>
+<h3 id="hyperneat">HyperNEAT</h3>
+<p>In 2009, Stanley, D’Ambrosio, and Gauci introduce HyperNEAT to evolve large neural networks <span class="citation" data-cites="stanley_hypercube-based_2009">5</span>. HyperNEAT extends Neuroevolution of Augmenting Topologies (NEAT) <span class="citation" data-cites="miikkulainen_evolving_2002">6</span>. Their approach is motivated to learn a conceptual representation of a desired network as a function of the given task’s geometric structure and claim geometric structure is oft discarded in the ANN world. They give a basic overview of NEAT that is worth mentioning here. NEAT comprises three key ideas. Tracking genes as network structures evolve in complexity over generations allows individuals to know if they are compatible with another in a complex structure or how they should combine to create offspring. A historical marking is assigned to each new structure that appears through mutation comprised and prevents topological searches. NEAT also creates populations so that groups compete within cliques and not overall — preserving topological innovations within cliques, allowing them to optimize before crossing over. NEAT also does not seed a population with random topologies — it seeds with uniform populations of simple networks, with each network having unique weight distributions. Combined, the NEAT strategy prioritizes searching for compact topologies by evolving complexity on an incremental level.</p>
+<p>The central encoding scheme is called Compositional Pattern Producing Networks (CPPNs) that represent connectivity patterns as functions of Cartesian space, finding a mapping from patterns in hyperspace to lower-dimensional space. Prior to CPPNs, methods like grammars and cellular simulations were used to abstract development, but CPPNs do not require explicit simulations to be done to evolve a network. Encodings in prior methods required direct encodings for an end point — a each solution’s representation maps to a single piece of structure in the end network. The inspiration for CPPNs came from the indirect encoding patterns contained within human DNA — mappings between genotypic and phenotypic expression are indirect, providing an incredible level of structural compression. They give an example — the human genome uses roughly <span class="math inline">\(3\times 10^5\)</span> genes to encode the brain’s <span class="math inline">\(10^{14}\)</span> connections. The high degree of structural similarity in biological beings allows common structures to be represented by small numbers of genes.</p>
+<p>CPPNs work by taking a pattern in space as a phenotype, which can be represented as a set of functions <span class="math inline">\(n\)</span>, where <span class="math inline">\(n\)</span> is the number of dimensions the phenotype has. The set of functions creates a novel coordinate frame where other functions may reside so that functions may be representing events in development (e.g., developing symmetry via a Gaussian function or cell division/repetition using periodic functions). See Figure [fig:cppn_encoding] for an overview. The choice of functions influences the generated motifs.</p>
+<p>HyperNEAT uses these components to exploit and find a mapping between spatial and connectivity that incorporates geometry. The endpoints of connections are output (see Figure [fig:hyperneat_substrate]) — more formally, cCPPN compute a function <span class="math inline">\(CPPN(x_1,y_1, x_2, y_2) = w)\)</span> with <span class="math inline">\(w\)</span> as the output thought of as a weight between the points. Only weights above a threshold are expressed. As the weights are a function of positions of source and target nodes, the weight matrix for grid connections represents a pattern that is a function of the underlaying geometry from the sampled coordinate system. As the result is a graph with activation functions and weighted edges, it is functionally equivalent to an ANN.</p>
+<figure>
+<img src="/fig/cppn_encoding.png" alt="A function f creates a spatial pattern, or phenotype with genotype f. The resulting CPPN is a graph holding connections between connected functions with weights applied to edges. Adapted from 5." /><figcaption>A function <span class="math inline">\(f\)</span> creates a spatial pattern, or phenotype with genotype <span class="math inline">\(f\)</span>. The resulting CPPN is a graph holding connections between connected functions with weights applied to edges. Adapted from <span class="citation" data-cites="stanley_hypercube-based_2009">5</span>.<span data-label="fig:cppn_encoding"></span></figcaption>
+</figure>
+<figure>
+<img src="/fig/hyperneat_fig.png" alt="Geometric connections in HyperNEAT. Substrate is queried for connections and the CPPN takes the endpoints from a query and outputs weights from them. Patterns emerge as a function of the substrate’s geometry. Adapted from 5." /><figcaption>Geometric connections in HyperNEAT. Substrate is queried for connections and the CPPN takes the endpoints from a query and outputs weights from them. Patterns emerge as a function of the substrate’s geometry. Adapted from <span class="citation" data-cites="stanley_hypercube-based_2009">5</span>.<span data-label="fig:hyperneat_substrate"></span></figcaption>
+</figure>
+<p>Substrates can take on on many <span class="math inline">\(n\)</span>-dimensional forms and could potentially be useful for different domains or investigating dominance of motifs within special spaces. Since the substrate configurations preserve structural relations, these structures may be exploited either apriori or elsewhere. The authors mention that this could be used in a visual-like system, where visual cortex neurons are distributed in the same two-dimensional pattern as retinas to exploit locality through repetition of simple patterns. This type of structural information can be thought of as providing the evolving network with local domain bias.</p>
+<p>Stanley et al propose two experiments to test HyperNEAT — one to explore how geometry can be exploited through reuse to create large representations in visual discrimination, another identifies issues of exploiting the aforementioned geometric regularities by comparing sensor systems on a food-gathering robot. Both experiments can exploit problem-specific geometry. Experiment 1 requires identification of the center of the large black box in an image with multiple boxes. <span class="math inline">\(11\times11\)</span> grids were generated and a target <span class="math inline">\(11 \times 11\)</span> grid was given for output. The goal was to have HyperNEAT learn a connectivity field that correctly corresponds to the center of the large box but must be robust to shifts in spacing and image orientation. The HyperNEAT set was evolved, as follows: each individual is evaluated for correctness in finding the target 75 times (the target is rotated and moved during presentations). Fitness is evaluated as the sum of the squared distance between the target and identified center averaged across the 75 trials. After 150 generations, HyperNEAT had &lt; 0.3 mean distance from the target, but more importantly, the scalability of the method was tested.</p>
+<p>HyperNEAT was trained on <span class="math inline">\(11 \times 11\)</span> grids, but evaluation was later scaled to both <span class="math inline">\(33\times33\)</span> and <span class="math inline">\(55 \times 55\)</span> with the same CPPN. The original grid has 14,641 connections; the two second evaluation grids had<br />
+ <span class="math inline">\(1\times 10^6\)</span> and<br />
+ <span class="math inline">\(9\times 10^6\)</span>, respectively. The CPPN preserved the <em>spacial</em> encodings and was able to generalize to the new grid sizes without any new training. After evaluating on the new grids, HyperNEAT performed similarly, with only slightly poorer performace. The <span class="math inline">\(55 \times 55\)</span> grid test’s resulting evolved network had 8.3 million connections in the substrate, and a CPPN with good performance had on average 24 represented connections. Results were similar in the food gathering task.</p>
+<h3 id="hyperneat-in-action">HyperNEAT in action</h3>
+<p>In Verbancsics and Harguess’ <span class="citation" data-cites="verbancsics_feature_2015">7</span> recent work, they detail using HyperNEAT for feature learning on satellite imagery in Naval applications. The authors have a repository BCTT200, defined in <span class="citation" data-cites="rainey_vessel_2012">8</span> that contains images four naval ships — barges, cargo, containers, and tankers obtained via satellite and identified by humans. There are 200 images per class and images have been lightly preprocessed. They are using a lightly-modfied version of HyperNEAT as defined above — HyperNEAT trains a CPPN that encodes an ANN directly. The Authors use Feature Learning HyperNEAT (FLHyperNEAT) that trains an ANN that transforms images into features via exploiting domain geometry which are then fed to another machine learner to identify the image.</p>
+<p>They run several experiements using the BCCT200 dataset. BCcT200 images were resized to <span class="math inline">\(28 \times 28\)</span> pixels and data was split per class into 100 training, 50 validation, and 50 testing images. The final machine learning was a KNN classifier (with <span class="math inline">\(k = 3\)</span>) which was trained during evolution on the features learned by FLHyperNEAT and the classification score is used as the fitness score for the next generation. (See Figure [fig:flhyperneat].) Image normalization strategies were studied as well — images were normalized prior to training either as max normalization, mean normalization, and standard deviation normalization. Normalization was done either with all of the pixels from all images, all pixes within each image, or pixels at a particular location in an image, and both unipolar (<span class="math inline">\([0, 1]\)</span>) or bipolar (<span class="math inline">\([-1, 1]\)</span>) ranges for pixels were chosen.</p>
+<p>For all experiments, results were reported as averaged over 30 epochs of 1500 generations of FLHyperNEAT. 200 functions represented the FLHyperNEAT population, and fitness was a weighted sum of the classification errors, precision, and an inverse MSE (not specifically defined).</p>
+<p>[h!] <img src="/fig/hyperneat_feature_learning.png" alt="image" /></p>
+<p>FLHyperNEAT was compared to principle component analysis (PCA) and FLHyperNEAT was constrained to linear features (e.g., no hidden layers in the ANN substrate) in fairness. Mean normalized test classification performance by PCA was 0.753 and FLHyperNEAT was equivalent in most cases, though reached a score of 0.80 in one case with max bipolar scaling. Class confusions were similar to PCA in nearly all cases.</p>
+<p>The features were tested again over different sizes of images. The original images were scaled to <span class="math inline">\(20^2, 28^2, 50^2, \text{ and } 100^2\)</span> pixels and PCA was ran and trained for all new experiment conditions while the trained at <span class="math inline">\(28^2\)</span> pixels CPPN was used for the new image sizes. PCA performs similarly as above. The CPPN features continued to work well at new images sizes, scoring 0.65, 0.75, 0.64, 0.63 respectively, without retraining.</p>
+<p>The authors conclude that over this small dataset, FLHyperNEAT can learn quality image features and can extend those features to different image sizes, which is considered a difficult problem in computer vision.</p>
+<div id="refs" class="references">
+<div id="ref-hubel_receptive_1959">
+<p>[1] D. H. Hubel and T. N. Wiesel, “Receptive fields of single neurones in the cat’s striate cortex,” <em>The Journal of Physiology</em>, vol. 148, pp. 574–591, Oct. 1959.</p>
+</div>
+<div id="ref-hubel_receptive_1962">
+<p>[2] D. H. Hubel and T. N. Wiesel, “Receptive fields, binocular interaction and functional architecture in the cat’s visual cortex,” <em>The Journal of Physiology</em>, vol. 160, pp. 106–154, Jan. 1962.</p>
+</div>
+<div id="ref-hinton_fast_2006">
+<p>[3] G. E. Hinton, S. Osindero, and Y.-W. Teh, “A fast learning algorithm for deep belief nets,” <em>Neural computation</em>, vol. 18, no. 7, pp. 1527–1554, 2006.</p>
+</div>
+<div id="ref-erhan_why_2010">
+<p>[4] D. Erhan, Y. Bengio, A. Courville, P.-A. Manzagol, P. Vincent, and S. Bengio, “Why does unsupervised pre-training help deep learning?” <em>The Journal of Machine Learning Research</em>, vol. 11, pp. 625–660, 2010.</p>
+</div>
+<div id="ref-stanley_hypercube-based_2009">
+<p>[5] K. O. Stanley, D. B. D’Ambrosio, and J. Gauci, “A hypercube-based encoding for evolving large-scale neural networks,” <em>Artificial life</em>, vol. 15, no. 2, pp. 185–212, 2009.</p>
+</div>
+<div id="ref-miikkulainen_evolving_2002">
+<p>[6] K. O. S. and R. Miikkulainen, “Evolving Neural Networks Through Augmenting Topologies,” 2002.</p>
+</div>
+<div id="ref-verbancsics_feature_2015">
+<p>[7] P. Verbancsics and J. Harguess, “Feature Learning HyperNEAT: Evolving Neural Networks to Extract Features for Classification of Maritime Satellite Imagery,” in <em>Information Processing in Cells and Tissues</em>, M. Lones, A. Tyrrell, S. Smith, and G. Fogel, Eds. Springer International Publishing, 2015, pp. 208–220.</p>
+</div>
+<div id="ref-rainey_vessel_2012">
+<p>[8] K. Rainey, S. Parameswaran, J. Harguess, and J. Stastny, “Vessel classification in overhead satellite imagery using learned dictionaries,” in <em>SPIE Optical Engineering+ Applications</em>, 2012, pp. 84992F–84992F.</p>
+</div>
+</div>
+
+        <hr />
+        <footer class="page-footer">
+          
+
+
+<div class="author-image">
+	<img src="http://aarongonzales.net/images/avatar.jpg" alt="Aaron Gonzales">
+</div><!-- ./author-image -->
+<div class="author-content">
+	<h3 class="author-name" >Written by <span itemprop="author">Aaron Gonzales</span></h3>
+	<p class="author-bio">I'm a typically atypical guy.</p>
+</div><!-- ./author-content -->
+          <div class="inline-btn">
+	<a class="btn-social twitter" href="https://twitter.com/intent/tweet?text=Some%20words%20about%20neural%20architectures&amp;url=http://aarongonzales.net/posts/nerd/2015/12/15/neural_nets_paper/&amp;via=binary_aaron" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i> Share on Twitter</a>
+	<a class="btn-social facebook" href="https://www.facebook.com/sharer/sharer.php?u=http://aarongonzales.net/posts/nerd/2015/12/15/neural_nets_paper/" target="_blank"><i class="fa fa-facebook" aria-hidden="true"></i> Share on Facebook</a>
+	<a class="btn-social google-plus"  href="https://plus.google.com/share?url=http://aarongonzales.net/posts/nerd/2015/12/15/neural_nets_paper/" target="_blank"><i class="fa fa-google-plus" aria-hidden="true"></i> Share on Google+</a>
+</div><!-- /.share-this -->
+          <div class="page-meta">
+	<p>Updated <time datetime="2015-12-15T00:00:00Z" itemprop="datePublished">December 15, 2015</time></p>
+</div><!-- /.page-meta -->
+        </footer><!-- /.footer -->
+        <aside>
+          
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+var disqus_shortname = 'hackofahacker'; // required: replace example with your forum shortname
+
+/* * * DON'T EDIT BELOW THIS LINE * * */
+(function() {
+var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+        </aside>
+      </div><!-- /.content -->
+    </div><!-- /.inner-wrap -->
+    
+  </article><!-- ./wrap -->
+</div><!-- /#main -->
+
+      <footer role="contentinfo" id="site-footer">
+	<nav role="navigation" class="menu bottom-menu">
+		<ul class="menu-item">
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/" >Home</a></li>
+		
+      
+        
+      
+			<li><a href="http://aarongonzales.net/contact" >Contact</a></li>
+		
+		</ul>
+	</nav><!-- /.bottom-menu -->
+	<p class="copyright">&#169; 2017 <a href="http://aarongonzales.net">a hack of a hacker</a> powered by <a href="http://jekyllrb.com" rel="nofollow">Jekyll</a> + <a href="http://mmistakes.github.io/skinny-bones-jekyll/" rel="nofollow">Skinny Bones</a>.</p>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-11008365-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</footer>
+
+    </div>
+
+    <script src="http://aarongonzales.net/js/vendor/jquery-1.9.1.min.js"></script>
+    <script src="http://aarongonzales.net/js/main.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script>
+    <link rel="stylesheet" href="/css/styles/custom.css">
+    <script src="/css/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+  </body>
+
+</html>
